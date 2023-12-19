@@ -1,0 +1,17 @@
+Para ejecutar el programa de chat, sigue estos pasos:
+
+1. Abre dos terminales (ventanas de línea de comandos) en tu sistema operativo.
+2. En la primera terminal, ejecuta el servidor de chat:
+
+        python chat_server.py
+
+    El servidor estará en espera de conexiones de clientes.
+
+3. En la segunda terminal, ejecuta el cliente:
+
+        python chat_client.py
+
+    Ingresa un nombre de usuario cuando se te solicite.
+
+Repite el paso 3 para abrir más clientes y únete al chat con diferentes nombres de usuario.
+Ahora deberías tener varios clientes conectados al servidor, y pueden comenzar a enviar mensajes entre ellos. Ten en cuenta que en este ejemplo, tanto el servidor como los clientes se están ejecutando localmente en el mismo dispositivo, pero puedes modificar las direcciones IP y los puertos en el código si deseas ejecutar el servidor en una máquina remota.

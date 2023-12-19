@@ -3,7 +3,7 @@ import threading
 
 # Configuración del cliente
 host = '127.0.0.1'
-port = 55555
+port = 55556
 
 # Nombre de usuario
 username = input("Ingresa tu nombre de usuario: ")

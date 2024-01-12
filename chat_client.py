@@ -5,7 +5,7 @@ import threading
 host = input("Ingresa la dirección IP del servidor: \nEn caso de dejarlo en blanco se asignará localhost\n")
 if host == '':
     host = '127.0.0.1'
-port = 55556
+port = 80
 
 # Nombre de usuario
 username = input("Ingresa tu nombre de usuario: ")

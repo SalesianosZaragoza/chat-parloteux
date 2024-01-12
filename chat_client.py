@@ -2,7 +2,7 @@ import socket
 import threading
 
 # Configuración del cliente
-host = '127.0.0.1'
+host = '10.10.0.69'
 port = 55556
 
 # Nombre de usuario

@@ -10,24 +10,23 @@ port = 65000
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 
-# print("Servidor iniciado con la dirección IP: " + )
-server.listen()
-host_addr = psutil.net_if_addrs()
-print("Servidor iniciado con la dirección IP: ")
-filtered_addresses = filter(
-    lambda x: '127.0.0.1' not in str(x[0]), (addr[0].address for addr in host_addr.values()))
-
-print(list(filtered_addresses))
-
-for inet in host_addr:
-    print(host_addr[inet][0].address)
-
+    
 # Función para para filtrar las direcciones IP
-def filter_addresses(addresses):
-    if addresses in ['127.0.0.1', 'localhost']:
+def filter_address(item):
+    if item[1][0].address in ['127.0.0.1', 'localhost'] or item[1][0].family != socket.AF_INET or item[1][0].netmask == '255.255.0.0':
         return False
     else:
         return True
+
+#print("Servidor iniciado con la dirección IP: " + )
+server.listen()
+host_addr = psutil.net_if_addrs()
+print("Servidor iniciado con las direcciones IP: ")
+filtered_addresses = filter(filter_address, host_addr.items())
+for address in filtered_addresses:
+    print(address[0], address[1][0].address)
+
+
 # Lista para almacenar clientes conectados
 clients = []
 usernames = []

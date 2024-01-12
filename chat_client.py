@@ -34,6 +34,19 @@ def send():
         message = f'{username}: {input("")}'
         client.send(message.encode('utf-8'))
 
+
+def cambioNombre():
+    pass #codigo mio, sin comprobar
+    global username
+    while True:
+        message = input("")
+        if message.startswith("/cname"):
+            new_username = message.split("/cname ")[1]
+            username = new_username
+            print(f"Tu nombre ha sido cambiado a: {username}")
+        else:
+            client.send(f'{username}: {message}'.encode('utf-8'))
+
 # Iniciar hilos para recibir y enviar mensajes simultáneamente
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

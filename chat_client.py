@@ -11,7 +11,7 @@ port = 65000
 username = input("Ingresa tu nombre de usuario: ")
 
 # Crear un socket del cliente
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
 
 

@@ -3,12 +3,12 @@ import threading
 import psutil
 
 # Configuración del servidor
-host = socket.gethostbyname(socket.gethostname)
+host = socket.gethostbyname(socket.gethostname())
 host = 'localhost'
 port = 65000
 
 # Crear un socket del servidor
-server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 
 #print("Servidor iniciado con la dirección IP: " + )

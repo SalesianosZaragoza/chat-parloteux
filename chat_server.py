@@ -3,22 +3,38 @@ import threading
 import psutil
 
 # Configuración del servidor
-host = socket.gethostbyname(socket.gethostname())
-host = 'localhost'
+host = ''
 port = 65000
 
 # Crear un socket del servidor
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 
-#print("Servidor iniciado con la dirección IP: " + )
+# print("Servidor iniciado con la dirección IP: " + )
 server.listen()
-print("Servidor iniciado con la dirección IP: " + host)
+host_addr = psutil.net_if_addrs()
+print("Servidor iniciado con la dirección IP: ")
+filtered_addresses = filter(
+    lambda x: '127.0.0.1' not in str(x[0]), (addr[0].address for addr in host_addr.values()))
+
+print(list(filtered_addresses))
+
+for inet in host_addr:
+    print(host_addr[inet][0].address)
+
+# Función para para filtrar las direcciones IP
+def filter_addresses(addresses):
+    if addresses in ['127.0.0.1', 'localhost']:
+        return False
+    else:
+        return True
 # Lista para almacenar clientes conectados
 clients = []
 usernames = []
 
 # Función para enviar mensajes a todos los clientes
+
+
 def broadcast(message, client):
     for c in clients:
         if c != client:
@@ -29,6 +45,8 @@ def broadcast(message, client):
                 remove(c)
 
 # Función para manejar la conexión de un cliente
+
+
 def handle(client):
     while True:
         try:
@@ -41,11 +59,14 @@ def handle(client):
             clients.remove(client)
             client.close()
             username = usernames[index]
-            broadcast(f'{username} ha abandonado el chat.'.encode('utf-8'), client)
+            broadcast(f'{username} ha abandonado el chat.'.encode(
+                'utf-8'), client)
             usernames.remove(username)
             break
 
 # Función para eliminar un cliente de la lista
+
+
 def remove(client):
     if client in clients:
         index = clients.index(client)
@@ -56,6 +77,8 @@ def remove(client):
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes
+
+
 def main():
     while True:
         # Aceptar conexión del cliente
@@ -75,6 +98,7 @@ def main():
         # Iniciar un hilo para manejar la conexión del cliente
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
+
 
 if __name__ == "__main__":
     main()

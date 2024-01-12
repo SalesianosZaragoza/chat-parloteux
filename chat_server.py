@@ -1,17 +1,19 @@
 import socket
 import threading
+import psutil
 
 # Configuración del servidor
-host = '127.0.0.1'
-port = 8081
+host = socket.gethostbyname(socket.gethostname)
+host = 'localhost'
+port = 65000
 
 # Crear un socket del servidor
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((host, port))
 
 #print("Servidor iniciado con la dirección IP: " + )
 server.listen()
-
+print("Servidor iniciado con la dirección IP: " + host)
 # Lista para almacenar clientes conectados
 clients = []
 usernames = []

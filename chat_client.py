@@ -5,14 +5,15 @@ import threading
 host = input("Ingresa la dirección IP del servidor: \nEn caso de dejarlo en blanco se asignará localhost\n")
 if host == '':
     host = '127.0.0.1'
-port = 8081
+port = 65000
 
 # Nombre de usuario
 username = input("Ingresa tu nombre de usuario: ")
 
 # Crear un socket del cliente
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client.connect((host, port))
+
 
 # Función para recibir mensajes del servidor
 def receive():

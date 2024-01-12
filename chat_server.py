@@ -3,11 +3,13 @@ import threading
 
 # Configuración del servidor
 host = '127.0.0.1'
-port = 80
+port = 8081
 
 # Crear un socket del servidor
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
+
+#print("Servidor iniciado con la dirección IP: " + )
 server.listen()
 
 # Lista para almacenar clientes conectados

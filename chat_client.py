@@ -2,7 +2,9 @@ import socket
 import threading
 
 # Configuración del cliente
-host = '10.10.0.69'
+host = input("Ingresa la dirección IP del servidor: \nEn caso de dejarlo en blanco se asignará localhost\n")
+if host == '':
+    host = '127.0.0.1'
 port = 55556
 
 # Nombre de usuario

@@ -56,7 +56,6 @@ def send():
         message = f'{username}: {input("")}'
         client.send(message.encode('utf-8'))
         last_message_time = time.time()  # Update the last message time
-        print("Se ha reiniciado el temporizador del usuario.")
 
 # Iniciar hilos para recibir y enviar mensajes simultáneamente
 receive_thread = threading.Thread(target=receive)

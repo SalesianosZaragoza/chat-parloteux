@@ -51,7 +51,10 @@ def handle(client):
         try:
             # Recibir mensaje del cliente
             message = client.recv(1024)
-            broadcast(message, client)
+            if message[0] == '/':
+                checkCommand(message)
+            else:
+                broadcast(message, client)
         except:
             # Eliminar el cliente si hay un problema al recibir el mensaje
             index = clients.index(client)
@@ -62,6 +65,14 @@ def handle(client):
                 'utf-8'), client)
             usernames.remove(username)
             break
+
+
+# Función de control de comandos
+
+def checkCommand(message):
+    command = str.split(message, '/', 1)
+    print(command)
+
 
 # Función para eliminar un cliente de la lista
 

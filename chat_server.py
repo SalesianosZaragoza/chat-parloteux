@@ -50,8 +50,9 @@ def handle(client):
     while True:
         try:
             # Recibir mensaje del cliente
-            message = client.recv(1024)
-            if message[0] == '/':
+            message = str(client.recv(1024))
+            print(f"cliente {client} envia el mensaje: {message}")
+            if message.startswith('/') :
                 checkCommand(message)
             else:
                 broadcast(message, client)
@@ -70,6 +71,7 @@ def handle(client):
 # Función de control de comandos
 
 def checkCommand(message):
+    print("es un comando")
     command = str.split(message, '/', 1)
     print(command)
 

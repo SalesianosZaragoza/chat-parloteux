@@ -58,7 +58,7 @@ def handle(client):
             print("clientUsername:",clientUsername)
             print("clientMessage",clientMessage)
             if clientMessage.startswith('/') :
-                checkCommand(clientMessage, clientUsername)
+                checkCommand(clientMessage, clientUsername, client)
             else:
                 broadcast(message, client)
         except:
@@ -75,10 +75,21 @@ def handle(client):
 
 # Función de control de comandos
 
-def checkCommand(clientMessage, clientUsername):
+def checkCommand(clientMessage, clientUsername, client):
     print("es un comando")
-    command = str.split(clientMessage, '/', 1)
-    print(command)
+    totalMessage = str.split(clientMessage, '/', 1)[1]
+    command, data = totalMessage.split(' ', 1)
+    print(command, data)
+
+    match command:
+        case "susurrar":
+            receptor = data.split(' ', 1)[0]
+            messageFinal = data.split(' ', 1)[1]
+            print(f"{clientUsername} susurra a {receptor} el mensaje {messageFinal}")
+        case _:
+            messageTotal = clientUsername + ": " + clientMessage
+            broadcast(messageTotal, client)
+    
 
 
 # Función para eliminar un cliente de la lista

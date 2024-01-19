@@ -53,10 +53,14 @@ def handle(client):
             message = str(client.recv(1024).decode('utf-8'))
             clientUsername = message.split(': ', 1)[0]
             clientMessage = message.split(': ', 1)[1]
+
+            """ Prints de debug para la separación de mensajes
             print(f"cliente {clientUsername} envia el mensaje: {clientMessage}")
             print("client:", client)
             print("clientUsername:",clientUsername)
             print("clientMessage",clientMessage)
+            """
+            
             if clientMessage.startswith('/') :
                 checkCommand(clientMessage, clientUsername, client)
             else:
@@ -76,10 +80,12 @@ def handle(client):
 # Función de control de comandos
 
 def checkCommand(clientMessage, clientUsername, client):
-    print("es un comando")
+    #print("es un comando")
+
     totalMessage = str.split(clientMessage, '/', 1)[1]
     command, data = totalMessage.split(' ', 1)
-    print(command, data)
+    
+    #print(command, data)
 
     match command:
         case "susurrar":
@@ -87,8 +93,8 @@ def checkCommand(clientMessage, clientUsername, client):
             messageFinal = data.split(' ', 1)[1]
             print(f"{clientUsername} susurra a {receptor} el mensaje {messageFinal}")
         case _:
-            messageTotal = clientUsername + ": " + clientMessage
-            broadcast(messageTotal, client)
+            rebuiltMessage = clientUsername + ": " + clientMessage
+            broadcast(rebuiltMessage, client)
     
 
 

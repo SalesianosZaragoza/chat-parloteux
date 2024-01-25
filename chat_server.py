@@ -43,55 +43,66 @@ def broadcast(message, client):
                 # Eliminar el cliente si hay un problema al enviar el mensaje
                 remove(c)
 
+
+
+
 # Función para manejar la conexión de un cliente
-
-
 def handle(client):
     while True:
         try:
             # Recibir mensaje del cliente
-            message = str(client.recv(1024).decode('utf-8'))
+            message = client.recv(1024)
+            
+            # Verificar si el mensaje está vacío, lo que indica que la conexión se ha cerrado
+            if not message:
+                break
+
+            # Decodificar y procesar el mensaje
+            message = message.decode('utf-8')
             clientUsername = message.split(': ', 1)[0]
             clientMessage = message.split(': ', 1)[1]
 
-            """ Prints de debug para la separación de mensajes
-            print(f"cliente {clientUsername} envia el mensaje: {clientMessage}")
+            """ Prints de debug para la separación de mensajes"""
+            print("message:", message)
+            print(f"cliente {clientUsername} envía el mensaje: {clientMessage}")
             print("client:", client)
-            print("clientUsername:",clientUsername)
-            print("clientMessage",clientMessage)
-            """
-            
-            if clientMessage.startswith('/') :
+            print("clientUsername:", clientUsername)
+            print("clientMessage:", clientMessage)
+            print("clients:", clients)
+
+            if clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:
-                broadcast(message, client)
-        except:
-            # Eliminar el cliente si hay un problema al recibir el mensaje
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-            username = usernames[index]
-            broadcast(f'{username} ha abandonado el chat.'.encode(
-                'utf-8'), client)
-            usernames.remove(username)
-            break
+                broadcast(message.encode('utf-8'), client)
 
+        except Exception as e:
+            print(f"Error en handle: {e}")
+            # Eliminar y cerrar la conexión del cliente
+            remove(client)
+
+            break
 
 # Función de control de comandos
 
 def checkCommand(clientMessage, clientUsername, client):
-    #print("es un comando")
+    print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
     command, data = totalMessage.split(' ', 1)
     
-    #print(command, data)
+    print(command, data)
 
     match command:
         case "susurrar":
-            receptor = data.split(' ', 1)[0]
+            receptorName = data.split(' ', 1)[0]
+            print("receptorName", receptorName)
+            try:
+                receptor = clients.index(receptorName)
+            except:
+                print("El usuario ", receptorName, " no existe")
+                return
             messageFinal = data.split(' ', 1)[1]
-            print(f"{clientUsername} susurra a {receptor} el mensaje {messageFinal}")
+            print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
         case _:
             rebuiltMessage = clientUsername + ": " + clientMessage
             broadcast(rebuiltMessage, client)

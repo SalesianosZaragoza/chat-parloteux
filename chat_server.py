@@ -50,8 +50,21 @@ def handle(client):
     while True:
         try:
             # Recibir mensaje del cliente
-            message = client.recv(1024)
-            broadcast(message, client)
+            message = str(client.recv(1024).decode('utf-8'))
+            clientUsername = message.split(': ', 1)[0]
+            clientMessage = message.split(': ', 1)[1]
+
+            """ Prints de debug para la separación de mensajes
+            print(f"cliente {clientUsername} envia el mensaje: {clientMessage}")
+            print("client:", client)
+            print("clientUsername:",clientUsername)
+            print("clientMessage",clientMessage)
+            """
+            
+            if clientMessage.startswith('/') :
+                checkCommand(clientMessage, clientUsername, client)
+            else:
+                broadcast(message, client)
         except:
             # Eliminar el cliente si hay un problema al recibir el mensaje
             index = clients.index(client)
@@ -62,6 +75,28 @@ def handle(client):
                 'utf-8'), client)
             usernames.remove(username)
             break
+
+
+# Función de control de comandos
+
+def checkCommand(clientMessage, clientUsername, client):
+    #print("es un comando")
+
+    totalMessage = str.split(clientMessage, '/', 1)[1]
+    command, data = totalMessage.split(' ', 1)
+    
+    #print(command, data)
+
+    match command:
+        case "susurrar":
+            receptor = data.split(' ', 1)[0]
+            messageFinal = data.split(' ', 1)[1]
+            print(f"{clientUsername} susurra a {receptor} el mensaje {messageFinal}")
+        case _:
+            rebuiltMessage = clientUsername + ": " + clientMessage
+            broadcast(rebuiltMessage, client)
+    
+
 
 # Función para eliminar un cliente de la lista
 

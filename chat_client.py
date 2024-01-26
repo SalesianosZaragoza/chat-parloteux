@@ -8,12 +8,15 @@ if host == '':
     host = '127.0.0.1'
 port = 65000
 
-# Nombre de usuario
-username = input("Ingresa tu nombre de usuario: ")
 
 # Crear un socket del cliente
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
+
+
+# Nombre de usuario
+username = 'null'
+
 
 #Variable para almacenar el tiempo del último mensaje
 last_message_time = time.time()
@@ -52,8 +55,13 @@ def receive():
 # Función para enviar mensajes al servidor
 def send():
     global last_message_time
+    global username
     while True:
-        message = f'{username}: {input("")}'
+        if username == 'null':
+            username = input("username: ")
+            message = f'{username}'
+        else:    
+            message = f'{username}: {input("")}'
         client.send(message.encode('utf-8'))
         last_message_time = time.time()  # Update the last message time
 

@@ -111,7 +111,7 @@ def checkCommand(clientMessage, clientUsername, client):
             print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
         case _:
             rebuiltMessage = clientUsername + ": " + clientMessage
-            broadcast(rebuiltMessage, client)
+            broadcast(rebuiltMessage.encode('utf-8'), client)
     
 
 
@@ -137,7 +137,7 @@ def main():
         print(f"Conexión establecida con {str(address)}")
 
         # Solicitar y almacenar el nombre de usuario del cliente
-        client.send('NICK'.encode('utf-8'))
+        client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
         username = client.recv(1024).decode('utf-8')
         usernames.append(username)
         clients.append(client)

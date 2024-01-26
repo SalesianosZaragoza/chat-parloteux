@@ -14,6 +14,7 @@ server.bind((host, port))
 # Función para para filtrar las direcciones IP
 def filter_address(item):
     if item[1][0].address in ['127.0.0.1', 'localhost'] or item[1][0].family != socket.AF_INET or item[1][0].netmask == '255.255.0.0':
+        # ___TEMPORAL___ el bloqueo de las IPs con mascara de red 255.255.0.0 es temporal mientras desarrollemos la app
         return False
     else:
         return True
@@ -22,7 +23,10 @@ def filter_address(item):
 server.listen()
 host_addr = psutil.net_if_addrs()
 print("Servidor iniciado con las direcciones IP: ")
-filtered_addresses = filter(filter_address, host_addr.items())
+try:
+    filtered_addresses = filter(filter_address, host_addr.items())
+except Exception as e:
+    print(e)
 for address in filtered_addresses:
     print(address[0], address[1][0].address)
 

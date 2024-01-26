@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import sys
 
 # Configuración del cliente
 host = input("Ingresa la dirección IP del servidor: \nEn caso de dejarlo en blanco se asignará localhost\n")
@@ -18,6 +19,7 @@ server.connect((host, port))
 username = 'null'
 
 quit = False
+
 
 #Variable para almacenar el tiempo del último mensaje
 last_message_time = time.time()
@@ -52,8 +54,10 @@ def receive():
             server.close()
             break       
 
+
 # Función para enviar mensajes al servidor
 def send():
+    global end
     global last_message_time
     global username
     global quit
@@ -91,3 +95,7 @@ receive_thread.start()
 send_thread = threading.Thread(target=send)
 send_thread.start()
 
+# Función para cerrar la conexión
+def close():
+    client.close()
+    sys.exit()

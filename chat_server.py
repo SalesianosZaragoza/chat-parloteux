@@ -131,8 +131,6 @@ def handle(client):
             print(f"Error en handle: {e}")
             if client not in clients:
                 break
-            client.send(f"Error en handle: {e}".encode('utf-8'))
-            continue
 
 # Función de control de comandos
 

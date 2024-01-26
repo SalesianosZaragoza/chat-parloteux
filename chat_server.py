@@ -79,7 +79,6 @@ def handle(client):
 
         except Exception as e:
             print(f"Error en handle: {e}")
-            # Eliminar y cerrar la conexión del cliente
             client.send(f"Error en handle: {e}".encode('utf-8'))
 
             continue

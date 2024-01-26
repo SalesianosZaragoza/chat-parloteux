@@ -160,9 +160,9 @@ def checkCommand(clientMessage, clientUsername, client):
                 #return
             messageFinal = data.split(' ', 1)[1]
             print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+        case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
-
         case _:
             broadcast(clientMessage, clientUsername, client)
 

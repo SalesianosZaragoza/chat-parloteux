@@ -14,6 +14,7 @@ server.bind((host, port))
 # Función para para filtrar las direcciones IP
 def filter_address(item):
     if item[1][0].address in ['127.0.0.1', 'localhost'] or item[1][0].family != socket.AF_INET or item[1][0].netmask == '255.255.0.0':
+        # ___TEMPORAL___ el bloqueo de las IPs con mascara de red 255.255.0.0 es temporal mientras desarrollemos la app
         return False
     else:
         return True
@@ -22,7 +23,10 @@ def filter_address(item):
 server.listen()
 host_addr = psutil.net_if_addrs()
 print("Servidor iniciado con las direcciones IP: ")
-filtered_addresses = filter(filter_address, host_addr.items())
+try:
+    filtered_addresses = filter(filter_address, host_addr.items())
+except Exception as e:
+    print(e)
 for address in filtered_addresses:
     print(address[0], address[1][0].address)
 
@@ -44,6 +48,15 @@ def broadcast(message, client):
                 remove(c)
 
 
+#Función para enviar un mensaje a un sólo cliente
+
+def soloMessage(message, client):
+    try:
+        message = message.encode('utf-8')
+        client.send(message)
+    except Exception as e:
+        print(f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
+        remove(client)
 
 
 # Función para manejar la conexión de un cliente
@@ -89,9 +102,14 @@ def checkCommand(clientMessage, clientUsername, client):
     print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
-    command, data = totalMessage.split(' ', 1)
-    
-    print(command, data)
+    #command, data = totalMessage.split(' ', 1)
+    #print(command, data)
+
+    if str.__contains__(totalMessage, ' '):
+        command, data = totalMessage.split(' ', 1)
+    else:
+        command = totalMessage
+        data = ""
 
     match command:
         case "susurrar":
@@ -101,9 +119,12 @@ def checkCommand(clientMessage, clientUsername, client):
                 receptor = clients.index(receptorName)
             except:
                 print("El usuario ", receptorName, " no existe")
-                return
+                #return
             messageFinal = data.split(' ', 1)[1]
             print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+        case "testSolo":
+            if clients.count != 0:
+                soloMessage("testMensajeUnico", clients[0])
         case _:
             rebuiltMessage = clientUsername + ": " + clientMessage
             broadcast(rebuiltMessage.encode('utf-8'), client)

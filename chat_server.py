@@ -103,9 +103,14 @@ def checkCommand(clientMessage, clientUsername, client):
     print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
-    command, data = totalMessage.split(' ', 1)
-    
-    print(command, data)
+    #command, data = totalMessage.split(' ', 1)
+    #print(command, data)
+
+    if str.__contains__(totalMessage, ' '):
+        command, data = totalMessage.split(' ', 1)
+    else:
+        command = totalMessage
+        data = ""
 
     match command:
         case "susurrar":

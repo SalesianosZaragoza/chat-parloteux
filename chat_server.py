@@ -57,16 +57,21 @@ BGMAGENTA = "\x1b[45m"
 BGCYAN = "\x1b[46m"
 BGWHITE = "\x1b[47m"
 
+SAVE_CURSOR = "\x1b7"
+RESTORE_CURSOR = "\x1b8"
+MOVE_CURSOR_BEGINNING_PREVIUS_LINE = "\x1b[F"
+
 def broadcast(clientMessage, clientUsername, client):
     for c in clients:
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIUS_LINE 
         if c != client:
             if clientUsername == "Server":
-                messageFormatted = RED + BOLD + BGWHITE 
+                messageFormatted += RED + BOLD 
             else:
-                messageFormatted = GREEN
+                messageFormatted += GREEN
         else:
-            messageFormatted = YELLOW + BOLD
-        messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage
+            messageFormatted += YELLOW + BOLD
+        messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage  + RESTORE_CURSOR
         try:
             c.send(messageFormatted.encode('utf-8'))
         except:
@@ -104,7 +109,7 @@ def handle(client):
             clientUsername = message.split(': ', 1)[0]
             clientMessage = message.split(': ', 1)[1]
 
-            """ Prints de debug para la separación de mensajes"""
+            """ Prints de debug para la separación de mensajes
             print("message:", message)
             print(
                 f"cliente {clientUsername} envía el mensaje: {clientMessage}")
@@ -112,7 +117,11 @@ def handle(client):
             print("clientUsername:", clientUsername)
             print("clientMessage:", clientMessage)
             print("clients:", clients)
+            """
+            print(f"cliente {clientUsername} envía el mensaje: {clientMessage}")
+            print("Clientes conectados:", len(clients))
 
+            
             if clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:

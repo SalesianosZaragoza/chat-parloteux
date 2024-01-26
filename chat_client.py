@@ -67,7 +67,7 @@ def send():
             message = f'{username}: {data}'
         try:
             server.send(message.encode('utf-8'))
-            print("\033[A                             \033[A") # Limpiar la línea de entrada de texto
+            print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
             if data == '/exit':
                 print("Cerrando conexión...")
                 quit = True

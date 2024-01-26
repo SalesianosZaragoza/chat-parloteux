@@ -56,10 +56,6 @@ def handle(client):
             # Verificar si el mensaje está vacío, lo que indica que la conexión se ha cerrado
             if not message:
                 # Eliminar y cerrar la conexión del cliente
-                index = clients.index(client)
-                username = usernames[index]
-                message = f'{username} ha abandonado el chat.'.encode('utf-8')
-                broadcast(message, client)
                 remove(client)
                 break
 
@@ -84,9 +80,9 @@ def handle(client):
         except Exception as e:
             print(f"Error en handle: {e}")
             # Eliminar y cerrar la conexión del cliente
-            
+            client.send(f"Error en handle: {e}".encode('utf-8'))
 
-            break
+            continue
 
 # Función de control de comandos
 

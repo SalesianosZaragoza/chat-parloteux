@@ -81,15 +81,14 @@ def broadcast(clientMessage, clientUsername, client):
             remove(c)
 
 
-# Función para enviar un mensaje a un sólo cliente
+#Función para enviar un mensaje a un sólo cliente
 
 def soloMessage(message, client):
     try:
         message = message.encode('utf-8')
         client.send(message)
     except Exception as e:
-        print(
-            f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
+        print(f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
         remove(client)
 
 
@@ -158,15 +157,12 @@ def checkCommand(clientMessage, clientUsername, client):
                 receptor = clients.index(receptorName)
             except:
                 print("El usuario ", receptorName, " no existe")
-                # return
+                #return
             messageFinal = data.split(' ', 1)[1]
-            print(
-                f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
-        case "testSolo":
+            print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
-        case "exit":
-            remove(client)
+
         case _:
             broadcast(clientMessage, clientUsername, client)
 

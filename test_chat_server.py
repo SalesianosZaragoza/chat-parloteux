@@ -1,27 +1,57 @@
 import chat_server
 import socket
-import mock
+# pip install pytest-mock pytest
 
-
-def test_broadcast(mocker):
+def test_broadcastClientSendCalled(mocker):
 	
 	#mocker.patch('chat_server.remove_username', return_value=None)
-	client = mock.Mock()
+	client = mocker.Mock()
 	client.send.return_value = None
-	client1 = mock.Mock()
+	
+	spy = mocker.spy(chat_server, 'remove')
+	chat_server.clients = [client,client]
+	assert len(chat_server.clients) == 2
 
-	#mocker.patch('socket.socket', return_value=client)
-	with mocker.patch('chat_server.clients', new_callable=PropertyMock) as mock_clients:
-		mock_clients.return_value = [client,client]
-		spy = mocker.spy(chat_server, 'broadcast')
-		assert chat_server.clients.count() == 2
+	mocker.patch('chat_server.remove_username', return_value=None)
 
-		spy = mocker.spy(chat_server, 'remove')
-		assert chat_server.clients.count() == 1
 
-		assert chat_server.broadcast('hola', client1) == None
-		assert spy.call_count == 1
-		assert spy.spy_return == None
+	assert chat_server.broadcast('hola', None) == None
+	assert client.send.called
+	assert spy.call_count == 0
+
+def test_broadcastClientSendNotCalled(mocker):
+	
+	#mocker.patch('chat_server.remove_username', return_value=None)
+	client = mocker.Mock()
+	client.send.return_value = None
+	
+	chat_server.clients = [client,client]
+	assert len(chat_server.clients) == 2
+
+	mocker.patch('chat_server.remove_username', return_value=None)
+	spy = mocker.spy(chat_server, 'remove')
+
+
+	assert chat_server.broadcast('hola', client) == None
+	assert not client.send.called
+	
+def test_broadcastClientSendException(mocker):
+	
+	#mocker.patch('chat_server.remove_username', return_value=None)
+	client = mocker.Mock()
+	client.send.side_effect = socket.error()
+	
+	chat_server.clients = [client,client]
+	assert len(chat_server.clients) == 2
+	mocker.patch('chat_server.remove_username', return_value=None)
+	spy = mocker.spy(chat_server, 'remove')
+
+
+	assert chat_server.broadcast('hola', None) == None
+	assert client.send.called
+	assert spy.called == True
+	
+
 
 
 

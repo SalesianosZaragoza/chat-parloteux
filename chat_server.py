@@ -139,10 +139,12 @@ def remove(client):
         index = clients.index(client)
         clients.remove(client)
         client.close()
-        username = usernames[index]
-        broadcast(f'{username} ha abandonado el chat.'.encode('utf-8'), client)
-        usernames.remove(username)
+        remove_username(index)
 
+def remove_username(index):
+    username = usernames[index]
+    broadcast(f'{username} ha abandonado el chat.'.encode('utf-8'), client)
+    usernames.remove(username)
 # Función principal para aceptar conexiones de clientes
 
 

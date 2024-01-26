@@ -126,6 +126,8 @@ def checkCommand(clientMessage, clientUsername, client):
         case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
+        case "exit":
+            remove(client)
         case _:
             rebuiltMessage = clientUsername + ": " + clientMessage
             broadcast(rebuiltMessage.encode('utf-8'), client)
@@ -142,6 +144,7 @@ def remove(client):
         client.close()
         username = usernames[index]
         broadcast(f'{username} ha abandonado el chat.'.encode('utf-8'), client)
+        print(f'{username} ha habandonado el chat.')
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes

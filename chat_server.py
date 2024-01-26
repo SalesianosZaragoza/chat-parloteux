@@ -38,17 +38,35 @@ usernames = []
 
 # Función para enviar mensajes a todos los clientes
 
+RESET = "\x1b[0m"
+BOLD = "\x1b[1m"
+BLACK = "\x1b[30m"
+RED = "\x1b[31m"
+GREEN = "\x1b[32m"
+YELLOW = "\x1b[33m"
+BLUE = "\x1b[34m"
+MAGENTA = "\x1b[35m"
+CYAN = "\x1b[36m"
+WHITE = "\x1b[37m"
+BGBLACK = "\x1b[40m"
+BGRED = "\x1b[41m"
+BGGREEN = "\x1b[42m"
+BGYELLOW = "\x1b[43m"
+BGBLUE = "\x1b[44m"
+BGMAGENTA = "\x1b[45m"
+BGCYAN = "\x1b[46m"
+BGWHITE = "\x1b[47m"
 
 def broadcast(clientMessage, clientUsername, client):
     for c in clients:
         if c != client:
             if clientUsername == "Server":
-                messageFormatted = '\x1b[31m' 
+                messageFormatted = RED + BOLD + BGWHITE 
             else:
-                messageFormatted = '\x1b[32m'
+                messageFormatted = GREEN
         else:
-            messageFormatted = '\x1b[33m'
-        messageFormatted += + clientUsername + ': ' + '\x1b[0m' + clientMessage
+            messageFormatted = YELLOW + BOLD
+        messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage
         try:
             c.send(messageFormatted.encode('utf-8'))
         except:

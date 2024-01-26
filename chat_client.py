@@ -26,6 +26,7 @@ def check_inactivity():
         if time.time() - last_message_time > 5 * 60:  # 5 minutos
             print("Llevas demasiado tiempo inactivo, cerrando conexión...")
             client.close()
+            exit(0)
             break
         if time.time() - last_message_time > 4 * 60:  # 4 minutos
             print("Si no escribes un mensaje dentro de un minuto, se cerrará la conexión.")
@@ -43,11 +44,10 @@ def receive():
             # Recibir y mostrar mensajes del servidor
             message = client.recv(1024).decode('utf-8')
             print(message)
-        except:
+        except Exception as e:
             # Cerrar la conexión si hay un problema al recibir el mensaje
-            print("Ha ocurrido un error. Saliendo...")
-            client.close()
-            break
+            print(f"Error en handle: {e}")
+            continue
 
 # Función para enviar mensajes al servidor
 def send():

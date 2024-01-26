@@ -31,7 +31,7 @@ def check_inactivity():
     global end
     while True:
             
-        if time.time() - last_message_time > 5 * 1:  # 5 minutos
+        if time.time() - last_message_time > 5 * 60:  # 5 minutos
             print("Llevas demasiado tiempo inactivo, cerrando conexión...")
             close_message = f'{username} se ha desconectado por inactividad'
             client.send(close_message.encode('utf-8'))
@@ -39,10 +39,10 @@ def check_inactivity():
             time.sleep(1)
             close()
             return
-        if time.time() - last_message_time > 4 * 1:  # 4 minutos
+        if time.time() - last_message_time > 4 * 60:  # 4 minutos
             print("Si no escribes un mensaje dentro de un minuto, se cerrará la conexión.")
             
-        time.sleep(6)  # Comprobar cada minuto
+        time.sleep(60)  # Comprobar cada minuto
 
 # Instanciar un hilo para verificar la inactividad del usuario
 inactivity_thread = threading.Thread(target=check_inactivity)

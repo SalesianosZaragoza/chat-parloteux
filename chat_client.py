@@ -94,8 +94,3 @@ receive_thread.start()
 
 send_thread = threading.Thread(target=send)
 send_thread.start()
-
-# Función para cerrar la conexión
-def close():
-    client.close()
-    sys.exit()

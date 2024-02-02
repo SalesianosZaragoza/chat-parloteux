@@ -36,7 +36,7 @@ for address in filtered_addresses:
 clients = []
 usernames = []
 
-# Función para enviar mensajes a todos los clientes
+#Constantes
 
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
@@ -59,11 +59,13 @@ BGWHITE = "\x1b[47m"
 
 SAVE_CURSOR = "\x1b7"
 RESTORE_CURSOR = "\x1b8"
-MOVE_CURSOR_BEGINNING_PREVIUS_LINE = "\x1b[F"
+MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
 
+
+# Función para enviar mensajes a todos los clientes
 def broadcast(clientMessage, clientUsername, client):
     for c in clients:
-        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIUS_LINE 
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE 
         if c != client:
             if clientUsername == "Server":
                 messageFormatted += RED + BOLD 

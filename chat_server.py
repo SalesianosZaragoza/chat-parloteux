@@ -10,7 +10,7 @@ port = 65000
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 
-    
+
 # Función para para filtrar las direcciones IP
 def filter_address(item):
     if item[1][0].address in ['127.0.0.1', 'localhost'] or item[1][0].family != socket.AF_INET or item[1][0].netmask == '255.255.0.0':
@@ -19,7 +19,8 @@ def filter_address(item):
     else:
         return True
 
-#print("Servidor iniciado con la dirección IP: " + )
+
+# print("Servidor iniciado con la dirección IP: " + )
 server.listen()
 host_addr = psutil.net_if_addrs()
 print("Servidor iniciado con las direcciones IP: ")
@@ -35,19 +36,61 @@ for address in filtered_addresses:
 clients = []
 usernames = []
 
+#Constantes
+
+RESET = "\x1b[0m"
+BOLD = "\x1b[1m"
+BLACK = "\x1b[30m"
+RED = "\x1b[31m"
+GREEN = "\x1b[32m"
+YELLOW = "\x1b[33m"
+BLUE = "\x1b[34m"
+MAGENTA = "\x1b[35m"
+CYAN = "\x1b[36m"
+WHITE = "\x1b[37m"
+BGBLACK = "\x1b[40m"
+BGRED = "\x1b[41m"
+BGGREEN = "\x1b[42m"
+BGYELLOW = "\x1b[43m"
+BGBLUE = "\x1b[44m"
+BGMAGENTA = "\x1b[45m"
+BGCYAN = "\x1b[46m"
+BGWHITE = "\x1b[47m"
+
+SAVE_CURSOR = "\x1b7"
+RESTORE_CURSOR = "\x1b8"
+MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
+
+
 # Función para enviar mensajes a todos los clientes
-
-
-def broadcast(message, client):
+def broadcast(clientMessage, clientUsername, client):
     for c in clients:
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE 
         if c != client:
-            try:
-                c.send(message)
-            except:
-                # Eliminar el cliente si hay un problema al enviar el mensaje
-                remove(c)
+            if clientUsername == "Server":
+                messageFormatted += RED + BOLD 
+            else:
+                messageFormatted += GREEN
+        else:
+            messageFormatted += YELLOW + BOLD
+        messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage  + RESTORE_CURSOR
+        try:
+            c.send(messageFormatted.encode('utf-8'))
+        except:
+            # Eliminar el cliente si hay un problema al enviar el mensaje
+            remove(c)
 
 
+# Función para enviar un mensaje a un sólo cliente
+
+def soloMessage(message, client):
+    try:
+        message = message.encode('utf-8')
+        client.send(message)
+    except Exception as e:
+        print(
+            f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
+        remove(client)
 
 
 # Función para manejar la conexión de un cliente
@@ -56,14 +99,10 @@ def handle(client):
         try:
             # Recibir mensaje del cliente
             message = client.recv(1024)
-            
+
             # Verificar si el mensaje está vacío, lo que indica que la conexión se ha cerrado
             if not message:
                 # Eliminar y cerrar la conexión del cliente
-                index = clients.index(client)
-                username = usernames[index]
-                message = f'{username} ha abandonado el chat.'.encode('utf-8')
-                broadcast(message, client)
                 remove(client)
                 break
 
@@ -72,35 +111,44 @@ def handle(client):
             clientUsername = message.split(': ', 1)[0]
             clientMessage = message.split(': ', 1)[1]
 
-            """ Prints de debug para la separación de mensajes"""
+            """ Prints de debug para la separación de mensajes
             print("message:", message)
-            print(f"cliente {clientUsername} envía el mensaje: {clientMessage}")
+            print(
+                f"cliente {clientUsername} envía el mensaje: {clientMessage}")
             print("client:", client)
             print("clientUsername:", clientUsername)
             print("clientMessage:", clientMessage)
             print("clients:", clients)
+            """
+            print(f"cliente {clientUsername} envía el mensaje: {clientMessage}")
+            print("Clientes conectados:", len(clients))
 
+            
             if clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:
-                broadcast(message.encode('utf-8'), client)
+                broadcast(clientMessage, clientUsername, client)
 
         except Exception as e:
             print(f"Error en handle: {e}")
-            # Eliminar y cerrar la conexión del cliente
-            
-
-            break
+            if client not in clients:
+                break
 
 # Función de control de comandos
+
 
 def checkCommand(clientMessage, clientUsername, client):
     print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
-    command, data = totalMessage.split(' ', 1)
-    
-    print(command, data)
+    # command, data = totalMessage.split(' ', 1)
+    # print(command, data)
+
+    if str.__contains__(totalMessage, ' '):
+        command, data = totalMessage.split(' ', 1)
+    else:
+        command = totalMessage
+        data = ""
 
     match command:
         case "susurrar":
@@ -110,13 +158,17 @@ def checkCommand(clientMessage, clientUsername, client):
                 receptor = clients.index(receptorName)
             except:
                 print("El usuario ", receptorName, " no existe")
-                return
+                # return
             messageFinal = data.split(' ', 1)[1]
-            print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+            print(
+                f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+        case "testSolo":
+            if clients.count != 0:
+                soloMessage("testMensajeUnico", clients[0])
+        case "exit":
+            remove(client)
         case _:
-            rebuiltMessage = clientUsername + ": " + clientMessage
-            broadcast(rebuiltMessage.encode('utf-8'), client)
-    
+            broadcast(clientMessage, clientUsername, client)
 
 
 # Función para eliminar un cliente de la lista
@@ -128,7 +180,10 @@ def remove(client):
         clients.remove(client)
         client.close()
         username = usernames[index]
-        broadcast(f'{username} ha abandonado el chat.'.encode('utf-8'), client)
+        clientUsername = "Server"
+        clientMessage = (f'{username} ha abandonado el chat.')
+        broadcast(clientMessage, clientUsername, client)
+        print(f'{username} ha habandonado el chat.')
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes
@@ -148,7 +203,9 @@ def main():
 
         # Anunciar la conexión del nuevo cliente a todos los clientes
         print(f"Usuario conectado: {username}")
-        broadcast(f'{username} se ha unido al chat.'.encode('utf-8'), client)
+        clientUsername = "Server"
+        clientMessage = (f'{username} se ha unido al chat.')
+        broadcast(clientMessage, clientUsername, client)
 
         # Iniciar un hilo para manejar la conexión del cliente
         thread = threading.Thread(target=handle, args=(client,))

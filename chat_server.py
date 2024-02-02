@@ -60,20 +60,25 @@ BGWHITE = "\x1b[47m"
 SAVE_CURSOR = "\x1b7"
 RESTORE_CURSOR = "\x1b8"
 MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
+CLEAR_ENTIRE_LINE = "\x1b[2K"
 
+colours = [GREEN, YELLOW, BLUE, MAGENTA, CYAN]
 
 # Función para enviar mensajes a todos los clientes
 def broadcast(clientMessage, clientUsername, client):
     for c in clients:
-        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE 
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + CLEAR_ENTIRE_LINE
         if c != client:
             if clientUsername == "Server":
                 messageFormatted += RED + BOLD 
             else:
-                messageFormatted += GREEN
+                i = usernames.index(clientUsername) % len(colours)
+                messageFormatted += colours[i] + BOLD
         else:
-            messageFormatted += YELLOW + BOLD
+            messageFormatted += WHITE
+
         messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage  + RESTORE_CURSOR
+        
         try:
             c.send(messageFormatted.encode('utf-8'))
         except:
@@ -181,9 +186,9 @@ def remove(client):
         client.close()
         username = usernames[index]
         clientUsername = "Server"
-        clientMessage = (f'{username} ha abandonado el chat.')
+        clientMessage = (f'{colours[index] + username + RESET} ha abandonado el chat.')
         broadcast(clientMessage, clientUsername, client)
-        print(f'{username} ha habandonado el chat.')
+        print(f'{colours[index] + username + RESET} ha habandonado el chat.')
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes
@@ -202,9 +207,9 @@ def main():
         clients.append(client)
 
         # Anunciar la conexión del nuevo cliente a todos los clientes
-        print(f"Usuario conectado: {username}")
+        print(f"Usuario conectado: {colours[len(usernames)-1]+username+RESET}")
         clientUsername = "Server"
-        clientMessage = (f'{username} se ha unido al chat.')
+        clientMessage = (f'{colours[len(usernames)-1]+username+RESET} se ha unido al chat.')
         broadcast(clientMessage, clientUsername, client)
 
         # Iniciar un hilo para manejar la conexión del cliente

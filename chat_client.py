@@ -33,8 +33,10 @@ def check_inactivity():
             print("Llevas demasiado tiempo inactivo, cerrando conexión...")
             quit = True
             server.close()
+            time.sleep(1)
+            print("Conexión cerrada.\nPresiona ctrl+c para salir.")
             break
-        if time.time() - last_message_time > 4 * 60 :  # 4 minutos
+        if time.time() - last_message_time > 4 * 60:  # 4 minutos
             print("Si no escribes un mensaje dentro de un minuto, se cerrará la conexión.")
             
         time.sleep(60)  # Comprobar cada minuto
@@ -53,6 +55,9 @@ def receive():
             quit = True
             server.close()
             break       
+#Constantes
+MOVES_CURSOR_1_LINE_UP = "\x1b[1A"
+CLEAR_ENTIRE_LINE = "\x1b[2K"
 
 
 # Función para enviar mensajes al servidor
@@ -71,7 +76,8 @@ def send():
             message = f'{username}: {data}'
         try:
             server.send(message.encode('utf-8'))
-            print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
+            print(MOVES_CURSOR_1_LINE_UP+CLEAR_ENTIRE_LINE+MOVES_CURSOR_1_LINE_UP)
+            #print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
             if data == '/exit':
                 print("Cerrando conexión...")
                 quit = True

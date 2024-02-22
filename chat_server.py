@@ -163,6 +163,7 @@ def checkCommand(clientMessage, clientUsername, client):
 # Función para recoger el remitente de un mensaje privado y llamar a soloMessage()
 
 def buildSusurro(clientMessage, data, clientUsername, client):
+    receptorIndex = -1
     if str.__contains__(data, " "):
         receptorName: str = data.split(' ', 1)[0]
         finalMessage: str = data.split(' ', 1)[1]
@@ -181,7 +182,20 @@ def buildSusurro(clientMessage, data, clientUsername, client):
         return
     
     messageFinal = data.split(' ', 1)[1]
+    messageFinal = "(" + clientUsername + " te susurra: " + messageFinal + ")"
+    if receptorIndex == -1:
+        print("index del receptor igual a -1 (valor por defecto, nunca debería ocurrir)")
+        return
+    
+    try:
+        receptorClient = clients[receptorIndex]
+    except:
+        print("error asignando el client receptor, el index puede ser erróneo")
+        print(f"{clientUsername} intentó susurrar a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+        return
+    
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+    soloMessage(messageFinal, receptorClient)
 
 # Función para eliminar un cliente de la lista
 

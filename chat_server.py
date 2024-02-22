@@ -151,21 +151,37 @@ def checkCommand(clientMessage, clientUsername, client):
 
     match command:
         case "susurrar":
-            receptorName = data.split(' ', 1)[0]
-            print("receptorName", receptorName)
-            try:
-                receptor = clients.index(receptorName)
-            except:
-                print("El usuario ", receptorName, " no existe")
-                #return
-            messageFinal = data.split(' ', 1)[1]
-            print(f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+            buildSusurro(clientMessage, data, clientUsername, client)
+
         case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
         case _:
             broadcast(clientMessage, clientUsername, client)
 
+
+# Función para recoger el remitente de un mensaje privado y llamar a soloMessage()
+
+def buildSusurro(clientMessage, data, clientUsername, client):
+    if str.__contains__(data, " "):
+        receptorName: str = data.split(' ', 1)[0]
+        finalMessage: str = data.split(' ', 1)[1]
+    else:
+        print("formato de susurro incorrecto:" + clientMessage)
+        return
+    
+    print("receptorName: _", receptorName,"_")
+
+    try:
+        receptorIndex = usernames.index(receptorName)
+    except:
+        print(f"usuario {receptorName} no encontrado")
+        print("usernames:")
+        print(usernames)
+        return
+    
+    messageFinal = data.split(' ', 1)[1]
+    print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
 
 # Función para eliminar un cliente de la lista
 

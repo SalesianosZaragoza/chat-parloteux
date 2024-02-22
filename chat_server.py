@@ -160,19 +160,18 @@ def checkCommand(clientMessage, clientUsername, client):
             broadcast(clientMessage, clientUsername, client)
 
 
-# Función para recoger el remitente de un mensaje privado y llamar a soloMessage()
+# Función para recoger el remitente de un mensaje privado, formatear el mensaje y llamar a soloMessage()
 
 def buildSusurro(clientMessage, data, clientUsername, client):
-    receptorIndex = -1
-    if str.__contains__(data, " "):
-        receptorName: str = data.split(' ', 1)[0]
-        finalMessage: str = data.split(' ', 1)[1]
-    else:
+    if not str.__contains__(data, " "):
         print("formato de susurro incorrecto:" + clientMessage)
         return
     
-    print("receptorName: _", receptorName,"_")
-
+    receptorName: str = data.split(' ', 1)[0]
+    message: str = data.split(' ', 1)[1]
+    receptorIndex = -1
+    
+    #print("receptorName: _", receptorName,"_")
     try:
         receptorIndex = usernames.index(receptorName)
     except:
@@ -181,17 +180,13 @@ def buildSusurro(clientMessage, data, clientUsername, client):
         print(usernames)
         return
     
-    messageFinal = data.split(' ', 1)[1]
-    messageFinal = "(" + clientUsername + " te susurra: " + messageFinal + ")"
-    if receptorIndex == -1:
-        print("index del receptor igual a -1 (valor por defecto, nunca debería ocurrir)")
-        return
+    messageFinal = "(" + clientUsername + " te susurra: " + message + ")"
     
     try:
         receptorClient = clients[receptorIndex]
     except:
         print("error asignando el client receptor, el index puede ser erróneo")
-        print(f"{clientUsername} intentó susurrar a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+        print(f"{clientUsername} INTENTÓ susurrar a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
         return
     
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")

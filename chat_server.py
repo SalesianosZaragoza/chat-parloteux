@@ -166,6 +166,9 @@ def checkCommand(clientMessage, clientUsername, client):
         case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
+        
+        case "exit":
+            remove(client)
         case _:
             broadcast(clientMessage, clientUsername, client)
 

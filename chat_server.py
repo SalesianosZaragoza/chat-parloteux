@@ -84,9 +84,12 @@ def broadcast(clientMessage, clientUsername, client):
 #Función para enviar un mensaje a un sólo cliente
 
 def soloMessage(message, client):
+    # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
+    # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
+    messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + message + RESTORE_CURSOR
     try:
-        message = message.encode('utf-8')
-        client.send(message)
+        messageFormatted = messageFormatted.encode('utf-8')
+        client.send(messageFormatted)
     except Exception as e:
         print(f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
         remove(client)
@@ -95,6 +98,7 @@ def soloMessage(message, client):
 # Función para enviar mensajes a un cliente como respuesta a sus acciones, antes de soloMessage para tener más
 # flexibilidad y quitar la lógica de formateo de mensajes de las demás funciones funciones
 def clientFeedback(message, client):
+    message = RED + message + RESET
     soloMessage(message, client)
 
 

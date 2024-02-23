@@ -92,6 +92,12 @@ def soloMessage(message, client):
         remove(client)
 
 
+# Función para enviar mensajes a un cliente como respuesta a sus acciones, antes de soloMessage para tener más
+# flexibilidad y quitar la lógica de formateo de mensajes de las demás funciones funciones
+def clientFeedback(message, client):
+    soloMessage(message, client)
+
+
 # Función para manejar la conexión de un cliente
 def handle(client):
     while True:
@@ -165,6 +171,7 @@ def checkCommand(clientMessage, clientUsername, client):
 def buildSusurro(clientMessage, data, clientUsername, client):
     if not str.__contains__(data, " "):
         print("formato de susurro incorrecto:" + clientMessage)
+        clientFeedback("Formato de susurro incorrecto. El formato es '/susurrar < usernameReceptor > < mensaje >'", client)
         return
     
     receptorName: str = data.split(' ', 1)[0]
@@ -178,6 +185,7 @@ def buildSusurro(clientMessage, data, clientUsername, client):
         print(f"usuario {receptorName} no encontrado")
         print("usernames:")
         print(usernames)
+        clientFeedback("Usuario destinatario no encontrado", client)
         return
     
     messageFinal = "(" + clientUsername + " te susurra: " + message + ")"
@@ -187,6 +195,7 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     except:
         print("error asignando el client receptor, el index puede ser erróneo")
         print(f"{clientUsername} INTENTÓ susurrar a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+        clientFeedback("Hubo un error inesperado mandando el mensaje", client)
         return
     
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")

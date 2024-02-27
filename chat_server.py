@@ -226,12 +226,12 @@ def crear_canal(clientMessage, client):
     else:
         if nombreCanal in canales:
             print("El canal ya existe")
-            mensaje = f"Nombre: '{nombreCanal}' no es válido; Canales existentes: {", ".join(canales.keys())}"
+            mensaje = f"Nombre: '{nombreCanal}' no es válido; Canales existentes: {', '.join(canales.keys())}"
             soloMessage(mensaje, client)
             return
         else:
             canales[nombreCanal] = Canal(nombreCanal)
-            exito = f"Canal '{nombreCanal}' creado con éxito; Canales existentes: {", ".join(canales.keys())}"
+            exito = f"Canal '{nombreCanal}' creado con éxito; Canales existentes: {', '.join(canales.keys())}"
             # print(exito)
             print(f"Canal '{nombreCanal}' creado con éxito")
             soloMessage(exito , client)
@@ -255,11 +255,11 @@ def eliminar_canal(clientMessage, client):
                 canalClient.send("El canal ha sido eliminado, te has movido al chat general".encode('utf-8'))
                 clients.append(canalClient)
             del canales[nombreCanal]
-            mensaje = f"Eliminado: '{nombreCanal}'  ; Canales existentes: {", ".join(canales.keys())}"
+            mensaje = f"Eliminado: '{nombreCanal}'  ; Canales existentes: {', '.join(canales.keys())}"
             soloMessage(mensaje, client)
             return
         else:
-            exito = f"Canal '{nombreCanal}' no Existe; Canales existentes: {", ".join(canales.keys())}"
+            exito = f"Canal '{nombreCanal}' no Existe; Canales existentes: {', '.join(canales.keys())}"
             print(f"Error: Canal '{nombreCanal}' no Existe")
             soloMessage(exito , client)
 

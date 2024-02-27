@@ -1,6 +1,7 @@
 import socket
 import threading
 import psutil
+from chat_canales import Canal 
 
 # Configuración del servidor
 host = ''
@@ -35,6 +36,7 @@ for address in filtered_addresses:
 # Lista para almacenar clientes conectados
 clients = []
 usernames = []
+canales = {}
 
 #Constantes
 
@@ -90,8 +92,11 @@ def broadcast(clientMessage, clientUsername, client):
 
 def soloMessage(message, client):
     try:
-        message = message.encode('utf-8')
-        client.send(message)
+        message = message + "\n"
+        # Si no va - > quitar el if
+        if client in clients:
+            message = message.encode('utf-8')
+            client.send(message)
     except Exception as e:
         print(
             f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
@@ -172,6 +177,14 @@ def checkCommand(clientMessage, clientUsername, client):
                 soloMessage("testMensajeUnico", clients[0])
         case "exit":
             remove(client)
+        case "newCanal" :
+            crear_canal(clientMessage, client)
+        case "Canal" :
+            crear_canal(clientMessage, client)
+        case "eliminarCanal" :
+            eliminar_canal(clientMessage, client)
+        case "clear" :
+            limpiar_terminal(client)
         case _:
             broadcast(clientMessage, clientUsername, client)
 
@@ -190,6 +203,83 @@ def remove(client):
         broadcast(clientMessage, clientUsername, client)
         print(f'{colours[index] + username + RESET} ha habandonado el chat.')
         usernames.remove(username)
+
+
+
+
+# Funciones de control y creacion de canales
+def crear_canal(clientMessage, client):
+    print("creando_el_canal")
+    if str.__contains__(clientMessage, ' '):
+        command, nombreCanal = clientMessage.split(' ', 1)
+    else:
+        command = clientMessage
+        nombreCanal = ""
+        mensaje = ("commando:" + command + " pero no es valido el nombre del canal")
+        soloMessage(mensaje, client)
+        
+    if nombreCanal == "" or nombreCanal == " " or nombreCanal == "newCanal":
+        print("No se ha ingresado el nombre del canal o el nombre del canal no es valido", nombreCanal)
+        mensaje = f"No se ha ingresado el nombre del canal o el nombre del canal no es valido; {nombreCanal}"
+        soloMessage(mensaje, client)
+        return
+    else:
+        if nombreCanal in canales:
+            print("El canal ya existe")
+            mensaje = f"Nombre: '{nombreCanal}' no es válido; Canales existentes: {", ".join(canales.keys())}"
+            soloMessage(mensaje, client)
+            return
+        else:
+            canales[nombreCanal] = Canal(nombreCanal)
+            exito = f"Canal '{nombreCanal}' creado con éxito; Canales existentes: {", ".join(canales.keys())}"
+            # print(exito)
+            print(f"Canal '{nombreCanal}' creado con éxito")
+            soloMessage(exito , client)
+    
+
+# metodo para eliminar un Canal en canales
+def eliminar_canal(clientMessage, client):
+    print("eliminando_el_canal")
+    if str.__contains__(clientMessage, ' '):
+        command, nombreCanal = clientMessage.split(' ', 1)
+    if nombreCanal == "" or nombreCanal == " ":
+        mensaje = ("Error:'" + nombreCanal + "' no es valido el nombre del canal")
+        soloMessage(mensaje, client)
+        return
+    else:
+        if nombreCanal in canales:
+            # Gestionar si los clientes se deben meter al chat General o a donde !!!!!!!!!!!!!!!!!!!!!!!!
+            # No gestiono el array username para evitar errores de usuarios repetidos
+            canalClientes = canales[nombreCanal].vaciar_canal()
+            for canalClient in canalClientes:
+                canalClient.send("El canal ha sido eliminado, te has movido al chat general".encode('utf-8'))
+                clients.append(canalClient)
+            del canales[nombreCanal]
+            mensaje = f"Eliminado: '{nombreCanal}'  ; Canales existentes: {", ".join(canales.keys())}"
+            soloMessage(mensaje, client)
+            return
+        else:
+            exito = f"Canal '{nombreCanal}' no Existe; Canales existentes: {", ".join(canales.keys())}"
+            print(f"Error: Canal '{nombreCanal}' no Existe")
+            soloMessage(exito , client)
+
+# metodo para limpiar la terminal 
+def limpiar_terminal(client):
+    MOVES = "\033[H" 
+    CLEAR = "\033[J"
+    BORRAR = MOVES +CLEAR
+    # BORRAR = "\033[2J"
+    # comandoBorrar = MOVES +CLEAR+ BORRAR
+    if client in clients:
+        index = clients.index(client)
+        username = usernames[index]
+        if clients.count != 0:
+            # soloMessage(comandoBorrar, client)
+            soloMessage(BORRAR, client)
+        print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
+        # print(MOVES + CLEAR, end='')
+
+
 
 # Función principal para aceptar conexiones de clientes
 

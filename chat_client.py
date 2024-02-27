@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import sys
+from chat_canales import Canal
 
 # Configuración del cliente
 host = input("Ingresa la dirección IP del servidor: \nEn caso de dejarlo en blanco se asignará localhost\n")

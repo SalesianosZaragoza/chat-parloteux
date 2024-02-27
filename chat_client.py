@@ -24,20 +24,30 @@ quit = False
 #Variable para almacenar el tiempo del último mensaje
 last_message_time = time.time()
 
+#Función para cerrar la conexión con el server
+def close_connection():
+    #print("Cerrando conexión...")
+    quit = True
+    server.close()
+    time.sleep(1)
+    #print("Conexión cerrada.\nPresiona ctrl+c para salir.")
+
+
 #Función para verificar la inactividad del usuario
 def check_inactivity():
     global last_message_time
     global quit
     while not quit:   
         if time.time() - last_message_time > 5 * 60:  # 5 minutos
-            print("Llevas demasiado tiempo inactivo, cerrando conexión...")
-            quit = True
-            server.close()
+            print("Llevas demasiado tiempo inactivo")
+            close_connection()
             break
-        if time.time() - last_message_time > 4 * 60 :  # 4 minutos
+        if time.time() - last_message_time > 4 * 60:  # 4 minutos
             print("Si no escribes un mensaje dentro de un minuto, se cerrará la conexión.")
             
         time.sleep(60)  # Comprobar cada minuto
+
+
 
 # Función para recibir mensajes del servidor
 def receive():
@@ -50,9 +60,14 @@ def receive():
         except Exception as e:
             # Cerrar la conexión si hay un problema al recibir el mensaje
             #print(f"Error en receive: {e}")
-            quit = True
-            server.close()
+            print("Cerrando conexión...")
+            close_connection()
+            print("Conexión cerrada.\nPresiona ctrl+c para salir.")
             break       
+
+#Constantes secuencias de escape
+MOVES_CURSOR_1_LINE_UP = "\x1b[1A" 
+CLEAR_ENTIRE_LINE = "\x1b[2K"
 
 
 # Función para enviar mensajes al servidor
@@ -71,13 +86,10 @@ def send():
             message = f'{username}: {data}'
         try:
             server.send(message.encode('utf-8'))
-            print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
+            print(MOVES_CURSOR_1_LINE_UP+CLEAR_ENTIRE_LINE+MOVES_CURSOR_1_LINE_UP)
+            #print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
             if data == '/exit':
-                print("Cerrando conexión...")
-                quit = True
-                server.close()
-                time.sleep(1)
-                print("Conexión cerrada.\nPresiona ctrl+c para salir.")
+                close_connection()
                 break
             last_message_time = time.time()  # Update the last message time
         except Exception as e:

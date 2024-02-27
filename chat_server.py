@@ -36,7 +36,7 @@ for address in filtered_addresses:
 clients = []
 usernames = []
 
-# Función para enviar mensajes a todos los clientes
+#Constantes
 
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
@@ -59,19 +59,26 @@ BGWHITE = "\x1b[47m"
 
 SAVE_CURSOR = "\x1b7"
 RESTORE_CURSOR = "\x1b8"
-MOVE_CURSOR_BEGINNING_PREVIUS_LINE = "\x1b[F"
+MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
+CLEAR_ENTIRE_LINE = "\x1b[2K"
 
+colours = [GREEN, YELLOW, BLUE, MAGENTA, CYAN]
+
+# Función para enviar mensajes a todos los clientes
 def broadcast(clientMessage, clientUsername, client):
     for c in clients:
-        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIUS_LINE 
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + CLEAR_ENTIRE_LINE
         if c != client:
             if clientUsername == "Server":
                 messageFormatted += RED + BOLD 
             else:
-                messageFormatted += GREEN
+                i = usernames.index(clientUsername) % len(colours)
+                messageFormatted += colours[i] + BOLD
         else:
-            messageFormatted += YELLOW + BOLD
+            messageFormatted += WHITE
+
         messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage  + RESTORE_CURSOR
+        
         try:
             c.send(messageFormatted.encode('utf-8'))
         except:
@@ -79,16 +86,25 @@ def broadcast(clientMessage, clientUsername, client):
             remove(c)
 
 
-# Función para enviar un mensaje a un sólo cliente
+#Función para enviar un mensaje a un sólo cliente
 
 def soloMessage(message, client):
+    # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
+    # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
+    messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + message + RESTORE_CURSOR
     try:
-        message = message.encode('utf-8')
-        client.send(message)
+        messageFormatted = messageFormatted.encode('utf-8')
+        client.send(messageFormatted)
     except Exception as e:
-        print(
-            f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
+        print(f"Se produjo una excepcion mientras se mandaba un mensaje al cliente {client}: {e}")
         remove(client)
+
+
+# Función para enviar mensajes a un cliente como respuesta a sus acciones, antes de soloMessage para tener más
+# flexibilidad y quitar la lógica de formateo de mensajes de las demás funciones funciones
+def clientFeedback(message, client):
+    message = RED + message + RESET
+    soloMessage(message, client)
 
 
 # Función para manejar la conexión de un cliente
@@ -150,24 +166,52 @@ def checkCommand(clientMessage, clientUsername, client):
 
     match command:
         case "susurrar":
-            receptorName = data.split(' ', 1)[0]
-            print("receptorName", receptorName)
-            try:
-                receptor = clients.index(receptorName)
-            except:
-                print("El usuario ", receptorName, " no existe")
-                # return
-            messageFinal = data.split(' ', 1)[1]
-            print(
-                f"{clientUsername} susurra a {receptorName} el mensaje {messageFinal}")
+            buildSusurro(clientMessage, data, clientUsername, client)
+
         case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
+        
         case "exit":
             remove(client)
         case _:
             broadcast(clientMessage, clientUsername, client)
 
+
+# Función para recoger el remitente de un mensaje privado, formatear el mensaje y llamar a soloMessage()
+
+def buildSusurro(clientMessage, data, clientUsername, client):
+    if not str.__contains__(data, " "):
+        print("formato de susurro incorrecto:" + clientMessage)
+        clientFeedback("Formato de susurro incorrecto. El formato es '/susurrar < usernameReceptor > < mensaje >'", client)
+        return
+    
+    receptorName: str = data.split(' ', 1)[0]
+    message: str = data.split(' ', 1)[1]
+    receptorIndex = -1
+    
+    #print("receptorName: _", receptorName,"_")
+    try:
+        receptorIndex = usernames.index(receptorName)
+    except:
+        print(f"usuario {receptorName} no encontrado")
+        print("usernames:")
+        print(usernames)
+        clientFeedback("Usuario destinatario no encontrado", client)
+        return
+    
+    messageFinal = "(" + clientUsername + " te susurra: " + message + ")"
+    
+    try:
+        receptorClient = clients[receptorIndex]
+    except:
+        print("error asignando el client receptor, el index puede ser erróneo")
+        print(f"{clientUsername} INTENTÓ susurrar a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+        clientFeedback("Hubo un error inesperado mandando el mensaje", client)
+        return
+    
+    print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
+    soloMessage(messageFinal, receptorClient)
 
 # Función para eliminar un cliente de la lista
 
@@ -179,9 +223,9 @@ def remove(client):
         client.close()
         username = usernames[index]
         clientUsername = "Server"
-        clientMessage = (f'{username} ha abandonado el chat.')
+        clientMessage = (f'{colours[index] + username + RESET} ha abandonado el chat.')
         broadcast(clientMessage, clientUsername, client)
-        print(f'{username} ha habandonado el chat.')
+        print(f'{colours[index] + username + RESET} ha habandonado el chat.')
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes
@@ -200,9 +244,9 @@ def main():
         clients.append(client)
 
         # Anunciar la conexión del nuevo cliente a todos los clientes
-        print(f"Usuario conectado: {username}")
+        print(f"Usuario conectado: {colours[len(usernames)-1]+username+RESET}")
         clientUsername = "Server"
-        clientMessage = (f'{username} se ha unido al chat.')
+        clientMessage = (f'{colours[len(usernames)-1]+username+RESET} se ha unido al chat.')
         broadcast(clientMessage, clientUsername, client)
 
         # Iniciar un hilo para manejar la conexión del cliente

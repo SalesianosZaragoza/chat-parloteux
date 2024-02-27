@@ -162,10 +162,9 @@ def checkCommand(clientMessage, clientUsername, client):
     match command:
         case "susurrar":
             buildSusurro(clientMessage, data, clientUsername, client)
-
-        case "testSolo":
-            if clients.count != 0:
-                soloMessage("testMensajeUnico", clients[0])
+        
+        case 'users' | 'usuarios':
+            soloMessage(usernames.__str__(), client)
         
         case "exit":
             remove(client)

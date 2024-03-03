@@ -141,6 +141,7 @@ def handle(client):
             if clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:
+                clientMessage = checkContent(clientMessage)
                 broadcast(clientMessage, clientUsername, client)
 
         except Exception as e:
@@ -213,9 +214,82 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
     soloMessage(messageFinal, receptorClient)
 
+# Función para comprobar el contenido del mensaje
+def checkContent(clientMessage):
+    clientMessage = checkEmoji(clientMessage)
+    clientMessage = checkFuck(clientMessage)
+    return clientMessage
+
+#Diccionario de Emojis
+EMOJI_DICT = {
+    ":)": "😀",
+    ":(": "😞",
+    ":D": "😃",
+    ":p": "😛",
+    ":O": "😲",
+    ";)": "😉",
+    "<3": "❤️",
+    ":*": "😘",
+    ":'(": "😢",
+    ":|": "😐",
+    ":/": "😕",
+    ":s": "😕",
+    ":$": "🤑",
+    ":L": "😆",
+    ":U": "🙃",
+    "XD": "😆",
+    ":B": "😎",
+    ":X": "🤐",
+    ":P": "😜",
+    ":T": "😓",
+    "8)": "😎",
+    ":o": "😮",
+    "O:)": "😇",
+    ":/": "😕",
+    ":]": "😊",
+    ":}": "😊",
+    ":caca": "💩",
+    ":fuego": "🔥",
+}
+
+#Función para comprobar emojis
+def checkEmoji(clientMessage):
+    for key, value in EMOJI_DICT.items():
+        clientMessage = clientMessage.replace(key, value)
+    return clientMessage
+
+#Diccionario de palabras malsonantes
+BAD_WORDS = {
+    'joder' : 'practicar deporte en horizontal',
+    'follar' : 'hacer bebes',
+    'puta': 'persona con un trabajo complicado',
+    'coño': 'la parte entre el ombligo y las rodillas (en femenino)',
+    'chúpamela': 'no estoy de acuerdo contigo',
+    'mierda': 'excremento',
+    'cabrón': 'persona con mucho carácter',
+    'gilipollas': 'persona con mucho carácter',
+    'polla': 'ave',
+    'pene': 'miembro viril',
+    'verga': 'palo',
+    'coger': 'agarrar',
+    'culo': 'parte trasera',
+    'zorra': 'animal',
+    'maricón': 'persona con mucha sensibilidad',
+    'puto': 'persona con un trabajo complicado',
+    'Gorka': 'Dios',
+    'Agustín': 'Un poco menos que Dios',
+    'salesianos': 'la mejor escuela del mundo',
+    'salesiano': 'persona con mucha suerte',
+    'salesiana': 'persona con mucha suerte'
+}
+#Función para comproobar palabras malsonantes
+def checkFuck(clientMessage):
+    for word, replacement in BAD_WORDS.items():
+        clientMessage = clientMessage.replace(word, replacement)
+    return clientMessage
+
+
 # Función para eliminar un cliente de la lista
-
-
 def remove(client):
     if client in clients:
         index = clients.index(client)

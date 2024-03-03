@@ -217,9 +217,10 @@ def buildSusurro(clientMessage, data, clientUsername, client):
 # Función para comprobar el contenido del mensaje
 def checkContent(clientMessage):
     clientMessage = checkEmoji(clientMessage)
-    #checkFuck(clientMessage)
+    clientMessage = checkFuck(clientMessage)
     return clientMessage
 
+#Diccionario de Emojis
 EMOJI_DICT = {
     ":)": "😀",
     ":(": "😞",
@@ -250,14 +251,45 @@ EMOJI_DICT = {
     ":caca": "💩",
     ":fuego": "🔥",
 }
-def checkEmoji(clientMessage):
 
+#Función para comprobar emojis
+def checkEmoji(clientMessage):
     for key, value in EMOJI_DICT.items():
         clientMessage = clientMessage.replace(key, value)
-
     return clientMessage
-# Función para eliminar un cliente de la lista
 
+#Diccionario de palabras malsonantes
+BAD_WORDS = {
+    'joder' : 'practicar deporte en horizontal',
+    'follar' : 'hacer bebes',
+    'puta': 'persona con un trabajo complicado',
+    'coño': 'la parte entre el ombligo y las rodillas (en femenino)',
+    'chúpamela': 'no estoy de acuerdo contigo',
+    'mierda': 'excremento',
+    'cabrón': 'persona con mucho carácter',
+    'gilipollas': 'persona con mucho carácter',
+    'polla': 'ave',
+    'pene': 'miembro viril',
+    'verga': 'palo',
+    'coger': 'agarrar',
+    'culo': 'parte trasera',
+    'zorra': 'animal',
+    'maricón': 'persona con mucha sensibilidad',
+    'puto': 'persona con un trabajo complicado',
+    'Gorka': 'Dios',
+    'Agustín': 'Un poco menos que Dios',
+    'salesianos': 'la mejor escuela del mundo',
+    'salesiano': 'persona con mucha suerte',
+    'salesiana': 'persona con mucha suerte'
+}
+#Función para comproobar palabras malsonantes
+def checkFuck(clientMessage):
+    for word, replacement in BAD_WORDS.items():
+        clientMessage = clientMessage.replace(word, replacement)
+    return clientMessage
+
+
+# Función para eliminar un cliente de la lista
 def remove(client):
     if client in clients:
         index = clients.index(client)

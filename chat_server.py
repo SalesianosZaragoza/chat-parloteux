@@ -141,6 +141,7 @@ def handle(client):
             if clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:
+                clientMessage = checkContent(clientMessage)
                 broadcast(clientMessage, clientUsername, client)
 
         except Exception as e:
@@ -213,8 +214,49 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
     soloMessage(messageFinal, receptorClient)
 
-# Función para eliminar un cliente de la lista
+# Función para comprobar el contenido del mensaje
+def checkContent(clientMessage):
+    clientMessage = checkEmoji(clientMessage)
+    #checkFuck(clientMessage)
+    return clientMessage
 
+EMOJI_DICT = {
+    ":)": "😀",
+    ":(": "😞",
+    ":D": "😃",
+    ":p": "😛",
+    ":O": "😲",
+    ";)": "😉",
+    "<3": "❤️",
+    ":*": "😘",
+    ":'(": "😢",
+    ":|": "😐",
+    ":/": "😕",
+    ":s": "😕",
+    ":$": "🤑",
+    ":L": "😆",
+    ":U": "🙃",
+    "XD": "😆",
+    ":B": "😎",
+    ":X": "🤐",
+    ":P": "😜",
+    ":T": "😓",
+    "8)": "😎",
+    ":o": "😮",
+    "O:)": "😇",
+    ":/": "😕",
+    ":]": "😊",
+    ":}": "😊",
+    ":caca": "💩",
+    ":fuego": "🔥",
+}
+def checkEmoji(clientMessage):
+
+    for key, value in EMOJI_DICT.items():
+        clientMessage = clientMessage.replace(key, value)
+
+    return clientMessage
+# Función para eliminar un cliente de la lista
 
 def remove(client):
     if client in clients:

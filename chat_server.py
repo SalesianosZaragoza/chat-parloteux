@@ -177,16 +177,22 @@ def checkCommand(clientMessage, clientUsername, client):
                 soloMessage("testMensajeUnico", clients[0])
         case "exit":
             remove(client)
-        case "newCanal" :
+        case "newCanal" | "new"  :
             crear_canal(clientMessage, client)
-        case "Canal" :
-            crear_canal(clientMessage, client)
-        case "eliminarCanal" :
+        case "Canal" | "canal" :
+            unirse_a_canal(clientMessage.split(' ')[1], client)
+        case "Canales" | "canales" | "list":
+            listar_canales(client)
+        case "eliminarCanal" | "deleteCanal" | "del" :
             eliminar_canal(clientMessage, client)
         case "clear" :
             limpiar_terminal(client)
         case _:
-            broadcast(clientMessage, clientUsername, client)
+            if (esta_en_algun_canal(client)) :
+                enviar_a_Canal(clientMessage, clientUsername, client, cliente_en_que_canal_esta(client))
+                print("llega")
+            else:
+                broadcast(clientMessage, clientUsername, client)
 
 
 # Función para eliminar un cliente de la lista
@@ -206,6 +212,92 @@ def remove(client):
 
 
 
+# Función para añadir un cliente al canal
+def unirse_a_canal(canal, client):
+    print(canal)
+    if(cliente_en_que_canal_esta(client) != None):
+        print(cliente_en_que_canal_esta(client))
+        salir_de_canal(cliente_en_que_canal_esta(client), client)
+    print("LLEGA " + canal)
+    for c in clients:
+        if c == client:
+            if(esta_en_el_canal(client, canal)):
+                mensaje = f"Ya estás en el canal '{canal}'"
+                soloMessage(mensaje, client)
+                return
+            else:
+                canales[canal].agregar_cliente(c)
+                mensaje = f"Te has unido al canal '{canal}'"
+                soloMessage(mensaje, client)
+                clientes = canales[canal].clientes
+                for c in clients:
+                    for e in clientes:
+                        if c == e:
+                            index = clients.index(c)
+                            username = usernames[index]
+                            print("Cliente " + index + " "+username+", ")
+                if client in clients:
+                    index = clients.index(client)
+                    username = usernames[index]
+                    print("Cliente "+username+": " + mensaje)
+                return
+        else:
+            mensaje = f"No te has unido al canal '{canal}'"
+            soloMessage(mensaje, client)
+
+# Función para añadir un cliente al canal
+def salir_de_canal(canal, client):
+    for c in clients:
+        if c == client:
+            canales[canal].eliminar_cliente(c)
+            mensaje = f"Te has salido del canal '{canal}'"
+            soloMessage(mensaje, client)
+            print("Cliente "+client+": " + mensaje)
+            return
+        else:
+            mensaje = f"No te has salido del canal '{canal}'"
+            soloMessage(mensaje, client)
+
+# Función para enviar mensajes al CANAL
+def enviar_a_Canal(clientMessage, clientUsername, client, canal):
+    for c in clients:
+        messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + CLEAR_ENTIRE_LINE
+        if c != client and c in canales[canal].clientes:
+            if clientUsername == "Server":
+                messageFormatted += RED + BOLD 
+            else:
+                i = usernames.index(clientUsername) % len(colours)
+                messageFormatted += colours[i] + BOLD
+        else:
+            messageFormatted += WHITE
+
+        messageFormatted += clientUsername + ':' + RESET + ' ' + clientMessage  + RESTORE_CURSOR
+        
+        try:
+            c.send(messageFormatted.encode('utf-8'))
+        except:
+            # Eliminar el cliente si hay un problema al enviar el mensaje
+            remove(c)
+
+#Funciones para gestionar CANALES y CLIENTES
+#Función que mira si el cliente esta en algun canal
+def esta_en_algun_canal(client):
+    for canal in canales.values():
+        if canal.encontrar_cliente(client) != None:
+            return True
+    return False
+#Función que mira si el cliente esta en EL Canal
+def esta_en_el_canal(client, canal):
+    if canales[canal].encontrar_cliente(client) != None:
+        return True
+    else:
+        return False
+#Funcion que devuelve el canal donde esta el cliente
+def cliente_en_que_canal_esta(client):
+    for canal in canales:
+        if canales[canal].encontrar_cliente(client) != None:
+            return canal.nombre
+    return None
 
 # Funciones de control y creacion de canales
 def crear_canal(clientMessage, client):
@@ -237,7 +329,17 @@ def crear_canal(clientMessage, client):
             soloMessage(exito , client)
     
 
-# metodo para eliminar un Canal en canales
+def listar_canales(client):
+    print("listando_canales")
+    if len(canales) == 0:
+        mensaje = "No hay canales creados"
+        soloMessage(mensaje, client)
+        return
+    else:
+        mensaje = f"Canales existentes: {', '.join(canales.keys())}"
+        soloMessage(mensaje, client)
+        return
+
 def eliminar_canal(clientMessage, client):
     print("eliminando_el_canal")
     if str.__contains__(clientMessage, ' '):
@@ -267,17 +369,15 @@ def eliminar_canal(clientMessage, client):
 def limpiar_terminal(client):
     MOVES = "\033[H" 
     CLEAR = "\033[J"
-    BORRAR = MOVES +CLEAR
-    # BORRAR = "\033[2J"
+    # BORRAR = MOVES +CLEAR
+    BORRAR = "\033[2J" + MOVES
     # comandoBorrar = MOVES +CLEAR+ BORRAR
     if client in clients:
         index = clients.index(client)
         username = usernames[index]
-        if clients.count != 0:
-            # soloMessage(comandoBorrar, client)
-            soloMessage(BORRAR, client)
+        
+        soloMessage(BORRAR, client)
         print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
-        # print(MOVES + CLEAR, end='')
 
 
 

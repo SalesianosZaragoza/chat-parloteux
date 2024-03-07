@@ -285,7 +285,7 @@ BAD_WORDS = {
 #Función para comproobar palabras malsonantes
 def checkFuck(clientMessage):
     for word, replacement in BAD_WORDS.items():
-        clientMessage = clientMessage.replace(word, replacement)
+        clientMessage = clientMessage.replace(word, '['+ replacement +']')
     return clientMessage
 
 

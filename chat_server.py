@@ -171,6 +171,9 @@ def checkCommand(clientMessage, clientUsername, client):
         
         case "users" | "usuarios":
             soloMessage(usernames.__str__(), client)
+        
+        case "emojis" | "emoji":
+            listEmojis(client)
 
         case "testSolo":
             if clients.count != 0:
@@ -260,6 +263,14 @@ def checkEmoji(clientMessage):
     for key, value in EMOJI_DICT.items():
         clientMessage = clientMessage.replace(key, value)
     return clientMessage
+
+def listEmojis(clientMessage):
+    totalString = ""
+    for key, value in EMOJI_DICT.items():
+        totalString = totalString + key + " --> " + value + '\n'
+        
+    totalString += '\n\n'
+    soloMessage(totalString, clientMessage)
 
 #Diccionario de palabras malsonantes
 BAD_WORDS = {

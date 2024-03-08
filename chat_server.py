@@ -38,6 +38,61 @@ usernames = []
 
 #Constantes
 
+#Diccionario de Emojis
+EMOJI_DICT = {
+    ":)": "😀",
+    ":(": "😞",
+    ":D": "😃",
+    ":p": "😛",
+    ":O": "😲",
+    ";)": "😉",
+    "<3": "❤️",
+    ":*": "😘",
+    ":'(": "😢",
+    ":|": "😐",
+    ":/": "😕",
+    ":s": "😕",
+    ":$": "🤑",
+    ":L": "😆",
+    ":U": "🙃",
+    "XD": "😆",
+    ":B": "😎",
+    ":X": "🤐",
+    ":P": "😜",
+    ":T": "😓",
+    "8)": "😎",
+    ":o": "😮",
+    "O:)": "😇",
+    ":/": "😕",
+    ":]": "😊",
+    ":}": "😊",
+    ":caca": "💩",
+    ":fuego": "🔥",
+}
+#Diccionario de palabras malsonantes
+BAD_WORDS = {
+    'joder' : 'practicar deporte en horizontal',
+    'follar' : 'hacer bebes',
+    'puta': 'persona con un trabajo complicado',
+    'coño': 'la parte entre el ombligo y las rodillas (en femenino)',
+    'chúpamela': 'no estoy de acuerdo contigo',
+    'mierda': 'excremento',
+    'cabrón': 'persona con mucho carácter',
+    'gilipollas': 'persona con mucho carácter',
+    'polla': 'ave',
+    'pene': 'miembro viril',
+    'verga': 'palo',
+    'coger': 'agarrar',
+    'culo': 'parte trasera',
+    'zorra': 'animal',
+    'maricón': 'persona con mucha sensibilidad',
+    'puto': 'persona con un trabajo complicado',
+    'Gorka': 'Dios',
+    'Agustín': 'Un poco menos que Dios',
+    'salesianos': 'la mejor escuela del mundo',
+    'salesiano': 'persona con mucha suerte',
+    'salesiana': 'persona con mucha suerte'
+}
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
 BLACK = "\x1b[30m"
@@ -61,6 +116,7 @@ SAVE_CURSOR = "\x1b7"
 RESTORE_CURSOR = "\x1b8"
 MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
 CLEAR_ENTIRE_LINE = "\x1b[2K"
+MOVE_CURSOR_END_EMOJIS = "\x1b["+str(len(EMOJI_DICT))+"B"
 
 colours = [GREEN, YELLOW, BLUE, MAGENTA, CYAN]
 
@@ -88,10 +144,12 @@ def broadcast(clientMessage, clientUsername, client):
 
 #Función para enviar un mensaje a un sólo cliente
 
-def soloMessage(message, client):
+def soloMessage(message, client, isEmoji = False):
     # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
     # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
     messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + message + RESTORE_CURSOR
+    if isEmoji:
+        messageFormatted += MOVE_CURSOR_END_EMOJIS
     try:
         messageFormatted = messageFormatted.encode('utf-8')
         client.send(messageFormatted)
@@ -168,6 +226,12 @@ def checkCommand(clientMessage, clientUsername, client):
     match command:
         case "susurrar":
             buildSusurro(clientMessage, data, clientUsername, client)
+        
+        case "users" | "usuarios":
+            soloMessage(usernames.__str__(), client)
+        
+        case "emojis" | "emoji":
+            listEmojis(client)
 
         case "testSolo":
             if clients.count != 0:
@@ -220,37 +284,6 @@ def checkContent(clientMessage):
     clientMessage = checkFuck(clientMessage)
     return clientMessage
 
-#Diccionario de Emojis
-EMOJI_DICT = {
-    ":)": "😀",
-    ":(": "😞",
-    ":D": "😃",
-    ":p": "😛",
-    ":O": "😲",
-    ";)": "😉",
-    "<3": "❤️",
-    ":*": "😘",
-    ":'(": "😢",
-    ":|": "😐",
-    ":/": "😕",
-    ":s": "😕",
-    ":$": "🤑",
-    ":L": "😆",
-    ":U": "🙃",
-    "XD": "😆",
-    ":B": "😎",
-    ":X": "🤐",
-    ":P": "😜",
-    ":T": "😓",
-    "8)": "😎",
-    ":o": "😮",
-    "O:)": "😇",
-    ":/": "😕",
-    ":]": "😊",
-    ":}": "😊",
-    ":caca": "💩",
-    ":fuego": "🔥",
-}
 
 #Función para comprobar emojis
 def checkEmoji(clientMessage):
@@ -258,34 +291,18 @@ def checkEmoji(clientMessage):
         clientMessage = clientMessage.replace(key, value)
     return clientMessage
 
-#Diccionario de palabras malsonantes
-BAD_WORDS = {
-    'joder' : 'practicar deporte en horizontal',
-    'follar' : 'hacer bebes',
-    'puta': 'persona con un trabajo complicado',
-    'coño': 'la parte entre el ombligo y las rodillas (en femenino)',
-    'chúpamela': 'no estoy de acuerdo contigo',
-    'mierda': 'excremento',
-    'cabrón': 'persona con mucho carácter',
-    'gilipollas': 'persona con mucho carácter',
-    'polla': 'ave',
-    'pene': 'miembro viril',
-    'verga': 'palo',
-    'coger': 'agarrar',
-    'culo': 'parte trasera',
-    'zorra': 'animal',
-    'maricón': 'persona con mucha sensibilidad',
-    'puto': 'persona con un trabajo complicado',
-    'Gorka': 'Dios',
-    'Agustín': 'Un poco menos que Dios',
-    'salesianos': 'la mejor escuela del mundo',
-    'salesiano': 'persona con mucha suerte',
-    'salesiana': 'persona con mucha suerte'
-}
+def listEmojis(clientMessage):
+    totalString = "Esta es la lista de emojis, se sustituyen automáticamente\n"
+    for key, value in EMOJI_DICT.items():
+        totalString = totalString + key + " --> " + value + '\n'
+        
+    totalString += '\n\n'
+    soloMessage(totalString, clientMessage, True)
+
 #Función para comproobar palabras malsonantes
 def checkFuck(clientMessage):
     for word, replacement in BAD_WORDS.items():
-        clientMessage = clientMessage.replace(word, replacement)
+        clientMessage = clientMessage.replace(word, '['+ replacement +']')
     return clientMessage
 
 

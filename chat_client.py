@@ -26,11 +26,11 @@ last_message_time = time.time()
 
 #Función para cerrar la conexión con el server
 def close_connection():
-    #print("Cerrando conexión...")
+    print("Cerrando conexión...")
     quit = True
     server.close()
     time.sleep(1)
-    #print("Conexión cerrada.\nPresiona ctrl+c para salir.")
+    print("Conexión cerrada.\nPresiona ctrl+c para salir.")
 
 
 #Función para verificar la inactividad del usuario
@@ -60,9 +60,9 @@ def receive():
         except Exception as e:
             # Cerrar la conexión si hay un problema al recibir el mensaje
             #print(f"Error en receive: {e}")
-            print("Cerrando conexión...")
+            #print("Cerrando conexión...")
             close_connection()
-            print("Conexión cerrada.\nPresiona ctrl+c para salir.")
+            #print("Conexión cerrada.\nPresiona ctrl+c para salir.")
             break       
 
 #Constantes secuencias de escape

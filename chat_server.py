@@ -173,6 +173,9 @@ def checkCommand(clientMessage, clientUsername, client):
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
         
+        case "cambioNombre":
+            cambiarNombre(clientMessage, data, clientUsername, client)
+        
         case "exit":
             remove(client)
         case _:
@@ -303,6 +306,31 @@ def remove(client):
         usernames.remove(username)
 
 # Función principal para aceptar conexiones de clientes
+        
+
+def cambiarNombre(clientMessage, data, clientUsername, client):
+    if str.__contains__(data, " "):
+        print("Formato de cambio de nombre incorrecto:" + clientMessage)
+        clientFeedback("Formato de cambio de nombre incorrecto. El formato es '/cambioNombre <NuevoNombre>'", client)
+        return
+    
+    new_username = data.split(' ', 1)[0]
+    try:
+        index = clients.index(client)
+    except ValueError:
+        print("Cliente no encontrado en la lista.")
+        return
+    
+    old_username = usernames[index]
+    usernames[index] = new_username
+    
+    # Notificar a todos los clientes sobre el cambio de nombre
+    message = f"{old_username} ha cambiado su nombre a {new_username}."
+    broadcast(message, "Server", client)
+    # Actualizar el nombre de usuario para el cliente
+    soloMessage(f"Tu nombre ha sido cambiado a: {new_username}", client)
+
+
 
 
 def main():

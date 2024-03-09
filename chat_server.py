@@ -211,7 +211,7 @@ def checkCommand(clientMessage, clientUsername, client):
                 
         case "gacha":
             personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
-            broadcast(f'{clientUsername} drew {personaje}!', 'Server', None)
+            broadcast(f'{clientUsername} obtuvo {personaje}!', 'Server', None)
 
         case "gacha50":
             desired_personaje = data  # The desired character is specified after the command

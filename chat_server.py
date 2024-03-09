@@ -1,6 +1,8 @@
 import socket
 import threading
+import time
 import psutil
+import random
 
 # Configuración del servidor
 host = ''
@@ -149,10 +151,15 @@ def handle(client):
             if client not in clients:
                 break
 
+
+admin = 'alberto'
+
+
 # Función de control de comandos
 
 
 def checkCommand(clientMessage, clientUsername, client):
+    global admin
     print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
@@ -175,15 +182,120 @@ def checkCommand(clientMessage, clientUsername, client):
         
         case "exit":
             remove(client)
-
+            
+                
         case "kick":
-            if clientUsername == 'alberto':
-                kick_usuario(data, client)
+            if clientUsername == admin:
+                kick_usuario(data, clientUsername, client)
+            else:
+                client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+        
+        case "admin":
+            if admin:
+                client.send(f'El administrador actual es {admin}'.encode('utf-8'))
+            else:
+                client.send('No hay administrador, que triste.'.encode('utf-8'))
+                
+        case  "darAdmin":
+            if clientUsername == admin:
+                admin = data
+                client.send(f'El nuevo administrador es {admin}'.encode('utf-8'))
             else:
                 client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
                 
+        case "usuarios":
+            if len(usernames) != 0:
+                client.send(f'Usuarios conectados: {usernames}'.encode('utf-8'))
+            else:
+                client.send('No hay usuarios conectados.'.encode('utf-8'))
+                
+        case "gacha":
+            personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
+            broadcast(f'{clientUsername} drew {personaje}!', 'Server', None)
+
+        case "gacha50":
+            desired_personaje = data  # The desired character is specified after the command
+            if desired_personaje not in [name for name, _ in personajes]:
+                broadcast(f'Personaje invalido "{desired_personaje}".', 'Server', None)
+            elif random.random() < 0.5:
+                broadcast(f'{clientUsername} obtuvo "{desired_personaje}" que deseaste, felicidades!', 'Server', None)
+            else:
+                otro_personaje = random.choice([name for name, _ in personajes if name != desired_personaje])
+                broadcast(f'{clientUsername}, perdiste el 50/50, obtuviste a "{otro_personaje}" ', 'Server', None)
+                
+                
+        case "ayuda":
+            command_list = "\n".join(f"{command}, {description}" for command, description in commands.items())
+            command_list += "\n"  # Add an extra newline at the end
+            client.send(command_list.encode('utf-8'))
+        
         case _:
             broadcast(clientMessage, clientUsername, client)
+
+
+# Diccionario de comandos y sus descripciones
+commands = {
+    "/susurrar": "Susurra un mensaje a un usuario",
+    "/exit": "Salir del chat",
+    "/kick": "Expulsar a un usuario",
+    "/admin": "Ver el administrador actual",
+    "/darAdmin": "Dar el rol de administrador a un usuario",
+    "/usuarios": "Ver los usuarios conectados",
+    "/gacha": "Hacer un gacha",
+    "/gacha50": "Hacer un gacha con un 50% de probabilidad de ganar el personaje deseado",
+    "/ayuda": "Ver la lista de comandos disponibles",
+}
+
+# Lista de personajes y sus probabilidades para el comando /gacha
+personajes = [
+    ("Qiqi", 0.2),
+    ("Hu Tao", 0.015),
+    ("Yelan", 0.015),
+    ("Kazuha", 0.015),
+    ("Yae Miko", 0.015),
+    ("Cyno", 0.015),
+    ("Shenhe", 0.015),
+    ("Ganyu", 0.015),
+    ("Xianyun", 0.015),
+    ("Xiao", 0.015),
+    ("Diluc", 0.015),
+    ("Klee", 0.015),
+    ("Albedo", 0.015),
+    ("Eula", 0.015),
+    ("Jean", 0.015),
+    ("Keqing", 0.015),
+    ("Mona", 0.015),
+    ("Venti", 0.015),
+    ("Zhongli", 0.015),
+    ("Childe", 0.015),
+    ("Ayaka", 0.015),
+    ("Raiden Shogun", 0.015),
+    ("Kokomi", 0.015),
+    ("Sara", 0.015),
+    ("Xingqiu", 0.015),
+    ("Beidou", 0.015),
+    ("Rosaria", 0.015),
+    ("Sucrose", 0.015),
+    ("Bennett", 0.015),
+    ("Fischl", 0.015),
+    ("Razor", 0.015),
+    ("Yanfei", 0.015),
+    ("Furina", 0.015),
+    ("Navia", 0.015),
+    ("Chevereuse", 0.015),
+    ("Nahida", 0.015),
+    ("Neuvillete", 0.015),
+    ("Yoimiya", 0.015),
+    ("Lyney", 0.015),
+    ("Wriothesley", 0.015),
+    ("Charlotte", 0.015),
+    ("Alhaitham", 0.015),
+    ("Xiangling", 0.015),
+    ("Kafka", 0.015),
+    ("Ruan Mei", 0.015),
+    ("Black Swan", 0.015),
+    ("Sparkle", 0.015),
+]
 
 
 # Función para recoger el remitente de un mensaje privado, formatear el mensaje y llamar a soloMessage()
@@ -222,7 +334,11 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     soloMessage(messageFinal, receptorClient)
 
 #Función para expulsar a un usuario
-def kick_usuario(name, client):
+def kick_usuario(name, clientUsername, client):
+    if clientUsername != admin:
+        client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+        return
+
     if name in usernames:
         name_index = usernames.index(name)
         client_to_kick = clients[name_index]
@@ -271,6 +387,7 @@ EMOJI_DICT = {
     ":}": "😊",
     ":caca": "💩",
     ":fuego": "🔥",
+    ":ignacio": "☭",
 }
 
 #Función para comprobar emojis
@@ -301,7 +418,8 @@ BAD_WORDS = {
     'Agustín': 'Un poco menos que Dios',
     'salesianos': 'la mejor escuela del mundo',
     'salesiano': 'persona con mucha suerte',
-    'salesiana': 'persona con mucha suerte'
+    'salesiana': 'persona con mucha suerte',
+    'comunista': '☭',
 }
 #Función para comproobar palabras malsonantes
 def checkFuck(clientMessage):

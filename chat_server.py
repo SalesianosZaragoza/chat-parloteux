@@ -175,6 +175,13 @@ def checkCommand(clientMessage, clientUsername, client):
         
         case "exit":
             remove(client)
+
+        case "kick":
+            if clientUsername == 'alberto':
+                kick_usuario(data, client)
+            else:
+                client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+                
         case _:
             broadcast(clientMessage, clientUsername, client)
 
@@ -213,6 +220,20 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
     soloMessage(messageFinal, receptorClient)
+
+#Función para expulsar a un usuario
+def kick_usuario(name, client):
+    if name in usernames:
+        name_index = usernames.index(name)
+        client_to_kick = clients[name_index]
+        clients.remove(client_to_kick)
+        client_to_kick.send('Has sido expulsado por un administrador.'.encode('utf-8'))
+        client_to_kick.close()
+        usernames.remove(name)
+        broadcast(f'{name} ha sido expulsado del chat por un administrador.', 'Server', client)
+        client.send(f'El usuario {name} ha sido expulsado con éxito.'.encode('utf-8'))
+    else:
+        client.send('Error: Nombre de usuario no válido'.encode('utf-8'))
 
 # Función para comprobar el contenido del mensaje
 def checkContent(clientMessage):
@@ -311,9 +332,17 @@ def main():
         client, address = server.accept()
         print(f"Conexión establecida con {str(address)}")
 
-        # Solicitar y almacenar el nombre de usuario del cliente
-        client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
-        username = client.recv(1024).decode('utf-8')
+        while True:
+            # Solicitar y almacenar el nombre de usuario del cliente
+            client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
+            username = client.recv(1024).decode('utf-8')
+        
+            # Comprobar si el usuario ya existe
+            if username in usernames:
+                client.send('Nombre de usuario ya está en uso. Por favor, elige otro.'.encode('utf-8'))
+            else:
+                break
+        
         usernames.append(username)
         clients.append(client)
 

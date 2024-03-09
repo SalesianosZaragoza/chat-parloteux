@@ -52,10 +52,17 @@ def check_inactivity():
 # Función para recibir mensajes del servidor
 def receive():
     global quit
+    global username
     while not quit:
         try:
             # Recibir y mostrar mensajes del servidor
             message = server.recv(1024).decode('utf-8')
+            if message == 'Nombre de usuario ya está en uso. Por favor, elige otro.':
+                username = 'null'  # Clear the username
+            elif message == 'Has sido expulsado por un administrador.':
+                print("Has sido expulsado del servidor.")
+                close_connection()
+                break
             print(message)
         except Exception as e:
             # Cerrar la conexión si hay un problema al recibir el mensaje

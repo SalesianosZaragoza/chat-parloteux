@@ -232,7 +232,7 @@ def unirse_a_canal(canal, client):
         salir_de_canal(Cliente_en_que_canal_esta(client), client)
     
     for c in canales:
-        # if c == client:
+        
         if c == canal:
             if(esta_en_el_canal(client, canal)):
                 mensaje = f"Ya estás en el canal '{canal}'"
@@ -243,7 +243,7 @@ def unirse_a_canal(canal, client):
                 canales[canal].agregar_Cliente(client)
                 mensaje = f"Te has unido al canal '{canal}'"
                 soloMessage(mensaje, client)
-                # canalClientes = canales[canal].canalClientes
+                
                 listar_clients_de_canal(clients)
 
                 return
@@ -261,6 +261,7 @@ def salir_de_canal(canal, client):
             soloMessage(mensaje, client)
             print("Cliente "+client+": " + mensaje)
             return
+        #Se podría quitar el else
         else:
             mensaje = f"No te has salido del canal '{canal}'"
             soloMessage(mensaje, client)
@@ -280,9 +281,9 @@ def enviar_a_Canal(clientMessage, clientUsername, client, canal):
 
         messageFormatted += clientUsername + ':' + RESET + ' ' + "Canal {canal}: " + clientMessage  + RESTORE_CURSOR
         
-        print("LLega antes de enviar")
+        # print("LLega antes de enviar")
         if c in canales[canal].clientes:
-            print("enviando...")
+            # print("enviando...")
             try:
                 c.send(messageFormatted.encode('utf-8'))
             except:
@@ -350,14 +351,14 @@ def listar_canales(client):
         soloMessage(mensaje, client)
         return
 
+#Funcion de desarrollador o admin que lista de TODOS los canales TODOS los usuarios
 def listar_clients_de_canales():
-    
     for canal in canales.keys():
         print("LLEGA")
         canalClientes = canales[canal].canalClientes
         # for client in clients:
         for canalCliente in canalClientes:
-            print("LLEGA2"+str(canalCliente))
+            # print("LLEGA2"+str(canalCliente))
             index = clients.index(canalCliente)
             username = usernames[index]
             message = "En canal ["+ str(canal) +"] Cliente "+ str(index) + " : "+ username
@@ -365,6 +366,23 @@ def listar_clients_de_canales():
             # no muestro la informacion al Cliente
     return
 
+#Funcion para lista los clients del canal donde esta el usuario
+def listar_clients_de_canal(client):
+    for canal in canales:
+        if canales[canal].encontrar_cliente(client) != None:
+            canalClientes = canales[canal].canalClientes
+            for canalCliente in canalClientes:
+                index = clients.index(canalCliente)
+                username = usernames[index]
+                mensaje = f"Canal '{canal}', Cliente '{index+1}': '{username}'"
+                soloMessage(mensaje, client)
+                print(mensaje)
+            # return
+        else:
+            mensaje = f"No estas en un canal. Unete"
+            soloMessage(mensaje, client)
+            listar_canales(client)
+    return
 
 def listar_clients(client):
     for client2 in clients:
@@ -415,23 +433,7 @@ def sacar_del_canal(client):
     return
 
 
-#Funcion para lista los clients de canales
-def listar_clients_de_canal(client):
-    for canal in canales:
-        if canales[canal].encontrar_cliente(client) != None:
-            canalClientes = canales[canal].canalClientes
-            for canalCliente in canalClientes:
-                index = clients.index(canalCliente)
-                username = usernames[index]
-                mensaje = f"Canal '{canal}', Cliente '{index+1}': '{username}'"
-                soloMessage(mensaje, client)
-                print(mensaje)
-            # return
-        else:
-            mensaje = f"No estas en un canal. Unete"
-            soloMessage(mensaje, client)
-            listar_canales(client)
-    return
+
 
 
 # metodo para limpiar la terminal 

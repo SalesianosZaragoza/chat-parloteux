@@ -52,18 +52,21 @@ def check_inactivity():
 # Función para recibir mensajes del servidor
 def receive():
     global quit
+    global username
     while not quit:
         try:
             # Recibir y mostrar mensajes del servidor
             message = server.recv(1024).decode('utf-8')
+            if "Tu nombre ha sido cambiado a:" in message:
+                # Actualizar el nombre de usuario localmente después del cambio
+                username = message.split(":")[1].strip()
             print(message)
         except Exception as e:
             # Cerrar la conexión si hay un problema al recibir el mensaje
-            #print(f"Error en receive: {e}")
             print("Cerrando conexión...")
             close_connection()
             print("Conexión cerrada.\nPresiona ctrl+c para salir.")
-            break       
+            break      
 
 #Constantes secuencias de escape
 MOVES_CURSOR_1_LINE_UP = "\x1b[1A" 

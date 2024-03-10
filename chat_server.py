@@ -72,7 +72,8 @@ def broadcast(clientMessage, clientUsername, client):
             if clientUsername == "Server":
                 messageFormatted += RED + BOLD 
             else:
-                i = usernames.index(clientUsername) % len(colours)
+                index = clients.index(client)
+                i = index % len(colours)
                 messageFormatted += colours[i] + BOLD
         else:
             messageFormatted += WHITE
@@ -329,6 +330,12 @@ def cambiarNombre(clientMessage, data, clientUsername, client):
     broadcast(message, "Server", client)
     # Actualizar el nombre de usuario para el cliente
     soloMessage(f"Tu nombre ha sido cambiado a: {new_username}", client)
+
+    # Actualizar el nombre de usuario en la lista de usernames
+    usernames[index] = new_username  # Update the username in the list
+
+    # Actualizar el nombre de usuario localmente en el servidor
+    clientUsername = new_username
 
 
 

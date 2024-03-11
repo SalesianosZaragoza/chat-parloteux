@@ -4,6 +4,7 @@ import time
 import psutil
 import random
 
+
 # Configuración del servidor
 host = ''
 port = 65000
@@ -255,27 +256,27 @@ def checkCommand(clientMessage, clientUsername, client):
             if clientUsername == admin:
                 kick_usuario(data, clientUsername, client)
             else:
-                client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+                client.send('No tienes permiso para realizar esta acción. \n'.encode('utf-8'))
         
         case "admin":
             if admin:
-                client.send(f'El administrador actual es {admin}'.encode('utf-8'))
+                client.send(f'El administrador actual es {admin} \n'.encode('utf-8'))
             else:
-                client.send('No hay administrador, que triste.'.encode('utf-8'))
+                client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
         case  "daradmin":
             if clientUsername == admin:
                 admin = data
-                client.send(f'El nuevo administrador es {admin}'.encode('utf-8'))
+                client.send(f'El nuevo administrador es {admin} \n'.encode('utf-8'))
             else:
-                client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+                client.send('No tienes permiso para realizar esta acción. \n'.encode('utf-8'))
                 
         case "gacha":
             personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
             broadcast(f'{clientUsername} obtuvo {personaje}!', 'Server', None)
 
         case "gacha50":
-            desired_personaje = data  # The desired character is specified after the command
+            desired_personaje = data  # El pokemon deseado por el usuario se especifica en el comando
             if desired_personaje not in [name for name, _ in personajes]:
                 broadcast(f'Personaje invalido "{desired_personaje}".', 'Server', None)
             elif random.random() < 0.5:
@@ -287,8 +288,16 @@ def checkCommand(clientMessage, clientUsername, client):
                 
         case "ayuda":
             command_list = "\n".join(f"{command}, {description}" for command, description in commands.items())
-            command_list += "\n"  # Add an extra newline at the end
+            command_list += "\n"  
             client.send(command_list.encode('utf-8'))
+            
+        case "clear" :
+            limpiar_terminal(client)
+            
+        case "listapokemon":
+            pokemon_list = "\n".join(name for name, _ in personajes)
+            pokemon_list += "\n"  
+            client.send(pokemon_list.encode('utf-8'))
         
         case _:
             broadcast(clientMessage, clientUsername, client)
@@ -296,15 +305,19 @@ def checkCommand(clientMessage, clientUsername, client):
 
 # Diccionario de comandos y sus descripciones
 commands = {
+    "/ayuda": "Ver la lista de comandos disponibles",
     "/susurrar": "Susurra un mensaje a un usuario",
+    "/usuarios o /users": "Ver los usuarios conectados",
+    "/emojis o /emoji": "Ver la lista de emojis",
+    "/testsolo": "Mandar un mensaje a un solo usuario para comprobar que funciona el comando /soloMessage",
     "/exit": "Salir del chat",
     "/kick": "Expulsar a un usuario",
     "/admin": "Ver el administrador actual",
     "/daradmin": "Dar el rol de administrador a un usuario",
-    "/usuarios": "Ver los usuarios conectados",
     "/gacha": "Hacer un gacha",
-    "/gacha50": "Hacer un gacha con un 50% de probabilidad de ganar el pokemon deseado",
-    "/ayuda": "Ver la lista de comandos disponibles",
+    "/gacha50 (pokemon)": "Hacer un gacha con un 50% de probabilidad de ganar el pokemon deseado",
+    "/listapokemon": "Ver la lista de pokemons disponibles",
+    "/clear" : "Limpiar la terminal",
 }
 
 # Lista de personajes y sus probabilidades para el comando /gacha
@@ -377,11 +390,11 @@ def kick_usuario(name, clientUsername, client):
         name_index = usernames.index(name)
         client_to_kick = clients[name_index]
         clients.remove(client_to_kick)
-        client_to_kick.send('Has sido expulsado por un administrador.'.encode('utf-8'))
+        client_to_kick.send(f'Has sido expulsado por {admin}.'.encode('utf-8'))
         client_to_kick.close()
         usernames.remove(name)
-        broadcast(f'{name} ha sido expulsado del chat por un administrador.', 'Server', client)
-        client.send(f'El usuario {name} ha sido expulsado con éxito.'.encode('utf-8'))
+        broadcast(f'{name} ha sido expulsado del chat por {admin}.', 'Server', client)
+        client.send(f'El usuario {name} ha sido expulsado con éxito.\n'.encode('utf-8'))
     else:
         client.send('Error: Nombre de usuario no válido'.encode('utf-8'))
 
@@ -428,6 +441,20 @@ def remove(client):
 
 # Función principal para aceptar conexiones de clientes
 
+
+# Metodo para limpiar la terminal 
+def limpiar_terminal(client):
+    MOVES = "\033[H" 
+    # CLEAR = "\033[J"
+    # BORRAR = MOVES +CLEAR 
+    BORRAR = "\033[2J"
+    # comandoBorrar = MOVES +CLEAR+ BORRAR
+    if client in clients:
+        index = clients.index(client)
+        username = usernames[index]
+        
+        soloMessage("\033[J"+ BORRAR + MOVES, client)
+        print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
 
 def main():
     while True:

@@ -208,10 +208,8 @@ def checkCommand(clientMessage, clientUsername, client):
             limpiar_terminal(client)
         case _:
             if (esta_en_algun_canal(client)) :
-                # print("llega")
                 enviar_a_Canal(clientMessage, clientUsername, client, Cliente_en_que_canal_esta(client))
             else:
-                # print("NO llega")
                 broadcast(clientMessage, clientUsername, client)
 
 
@@ -429,14 +427,19 @@ def eliminar_canal(clientMessage, client):
         return
     else:
         if nombreCanal in canales:
-            canalClientes = canales[nombreCanal].vaciar_canal()
-            for canalClient in canalClientes:
-                canalClient.send("El canal ha sido eliminado, te has movido al chat general".encode('utf-8'))
-                #clients.append(canalClient)#   Mira esta linea si hay un error
-            del canales[nombreCanal]
-            mensaje = f"Eliminado: '{nombreCanal}'  ; Canales existentes: {', '.join(canales.keys())}"
-            soloMessage(mensaje, client)
-            return
+            if canales[nombreCanal].clientes != []:
+                mensaje = f"Error: No se puede eliminar el canal '{nombreCanal}' porque hay clientes en él"
+                soloMessage(mensaje, client)
+                return
+            else:
+                canalClientes = canales[nombreCanal].vaciar_canal()
+                for canalClient in canalClientes:
+                    canalClient.send("El canal ha sido eliminado, te has movido al chat general".encode('utf-8'))
+                    #clients.append(canalClient)#   Mira esta linea si hay un error
+                del canales[nombreCanal]
+                mensaje = f"Eliminado: '{nombreCanal}'  ; Canales existentes: {', '.join(canales.keys())}"
+                soloMessage(mensaje, client)
+                return
         else:
             exito = f"Canal '{nombreCanal}' no Existe; Canales existentes: {', '.join(canales.keys())}"
             print(f"Error: Canal '{nombreCanal}' no Existe")

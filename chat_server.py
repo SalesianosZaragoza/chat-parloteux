@@ -189,7 +189,7 @@ def checkCommand(clientMessage, clientUsername, client):
         case "eliminarCanal" | "deleteCanal" | "del" :
             eliminar_canal(clientMessage, client)
         case "salirCanal" | "exitCanal" | "ec" | "eC" :
-            sacar_del_canal(client)
+            salir_de_canal(Cliente_en_que_canal_esta(client),client)
         case "listCanal" | "lc" | "Lc" | "LC" :
             listar_clients_de_canal(client)
         case "all" | "allClients" | "allclients" | "todoslosClientes":
@@ -261,10 +261,9 @@ def salir_de_canal(canal, client):
             soloMessage(mensaje, client)
             print("Cliente "+client+": " + mensaje)
             return
-        #Se podría quitar el else
-        else:
-            mensaje = f"No te has salido del canal '{canal}'"
-            soloMessage(mensaje, client)
+        # else:
+        #     mensaje = f"No te has salido del canal '{canal}'"
+        #     soloMessage(mensaje, client)
 
 # Función para enviar mensajes al CANAL
 def enviar_a_Canal(clientMessage, clientUsername, client, canal):
@@ -279,7 +278,7 @@ def enviar_a_Canal(clientMessage, clientUsername, client, canal):
         else:
             messageFormatted += WHITE
 
-        messageFormatted += clientUsername + ':' + RESET + ' ' + "Canal {canal}: " + clientMessage  + RESTORE_CURSOR
+        messageFormatted += clientUsername + ':' + RESET + ' ' + "Canal [" + canal + "]: " + clientMessage  + RESTORE_CURSOR
         
         # print("LLega antes de enviar")
         if c in canales[canal].clientes:

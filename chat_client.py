@@ -85,8 +85,13 @@ def send():
     global quit
     while not quit:
         if username == 'null':
-            username = input("username: ")
-            message = f'{username}'
+            while True:  
+                username = input("username: ")
+                message = f'{username}'
+                server.send(message.encode('utf-8'))  
+                time.sleep(1)  
+                if username != 'null':  
+                    break
             data = ''
         else:
             data = input("")    
@@ -94,15 +99,13 @@ def send():
         try:
             server.send(message.encode('utf-8'))
             print(MOVES_CURSOR_1_LINE_UP+CLEAR_ENTIRE_LINE+MOVES_CURSOR_1_LINE_UP)
-            #print("\033[A                                                                                \033[A") # Limpiar la línea de entrada de texto 80 caracteres
             if data == '/exit':
                 close_connection()
                 break
-            last_message_time = time.time()  # Update the last message time
+            last_message_time = time.time() 
         except Exception as e:
-            #print(f'Error en send: {e}')
             server.close()
-            break       
+            break    
 
 # Instanciar un hilo para verificar la inactividad del usuario
 inactivity_thread = threading.Thread(target=check_inactivity)

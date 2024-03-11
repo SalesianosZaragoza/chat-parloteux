@@ -176,7 +176,7 @@ def checkCommand(clientMessage, clientUsername, client):
         case "susurrar":
             buildSusurro(clientMessage, data, clientUsername, client)
 
-        case "testSolo":
+        case "testsolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
         
@@ -196,7 +196,7 @@ def checkCommand(clientMessage, clientUsername, client):
             else:
                 client.send('No hay administrador, que triste.'.encode('utf-8'))
                 
-        case  "darAdmin":
+        case  "daradmin":
             if clientUsername == admin:
                 admin = data
                 client.send(f'El nuevo administrador es {admin}'.encode('utf-8'))
@@ -239,7 +239,7 @@ commands = {
     "/exit": "Salir del chat",
     "/kick": "Expulsar a un usuario",
     "/admin": "Ver el administrador actual",
-    "/darAdmin": "Dar el rol de administrador a un usuario",
+    "/daradmin": "Dar el rol de administrador a un usuario",
     "/usuarios": "Ver los usuarios conectados",
     "/gacha": "Hacer un gacha",
     "/gacha50": "Hacer un gacha con un 50% de probabilidad de ganar el pokemon deseado",

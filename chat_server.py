@@ -93,8 +93,11 @@ BAD_WORDS = {
     'Agustín': 'Un poco menos que Dios',
     'salesianos': 'la mejor escuela del mundo',
     'salesiano': 'persona con mucha suerte',
-    'salesiana': 'persona con mucha suerte'
+    'salesiana': 'persona con mucha suerte',
+    'comunista': '☭'
+    
 }
+
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
 BLACK = "\x1b[30m"

@@ -181,21 +181,29 @@ def checkCommand(clientMessage, clientUsername, client):
         case "exit":
             remove(client)
         case "newCanal" | "new"  :
-            crear_canal(clientMessage, client)
+            if(tiene_mas_de_una_palabra(data)):
+                soloMessage("Error: El nombre del canal no puede tener espacios", client)
+            else:
+                crear_canal(clientMessage, client)
         case "Canal" | "canal" :
-            unirse_a_canal(clientMessage.split(' ')[1], client)
+            print(clientMessage)
+            if(clientMessage.split(' ')[1] in canales):
+                unirse_a_canal(clientMessage.split(' ')[1], client)
+            else:
+                mensaje = f"Error:No se reconoce el canal '{clientMessage.split(' ')[1]}' como válido"
+                soloMessage(mensaje, client)
         case "Canales" | "canales" | "listarCanales"| "listaCanales":
             listar_canales(client)
         case "eliminarCanal" | "deleteCanal" | "del" :
             eliminar_canal(clientMessage, client)
         case "salirCanal" | "exitCanal" | "ec" | "eC" :
             salir_de_canal(Cliente_en_que_canal_esta(client),client)
-        case "listCanal" | "lc" | "Lc" | "LC" :
+        case "listClientesCanal" | "lc" | "Lc" | "LC" :
             listar_clients_de_canal(client)
         case "all" | "allClients" | "allclients" | "todoslosClientes":
             listar_clients(client)
         case "allc":
-            listar_clients_de_canales()
+            listar_clients_de_canales(clientMessage, clientUsername, client)
         case "clear" :
             limpiar_terminal(client)
         case _:
@@ -223,34 +231,53 @@ def remove(client):
         usernames.remove(username)
 
 
+# Mostrar los comandos relacionados con los canales
+comandosCanales = {
+    "newCanal | new": "Crear un nuevo canal",
+    "Canal | canal": "Unirse a un canal",
+    "Canales | canales": "Listar los canales existentes",
+    "deleteCanal | del": "Eliminar un canal",
+    "exitCanal | ec": "Salir del canal",
+    "listClientesCanal | lc": "Listar los clientes del canal",
+    "allc": "Listar todos los clientes de todos los canales"
+}
+def mostrar_comandos_canales():
+    print("\nComandos relacionados con los canales:\n")
+    for comando, descripcion in comandosCanales.items():
+        print(f"{comando}: {descripcion}" + "\n")
+
 
 # Función para añadir un Cliente al canal
 def unirse_a_canal(canal, client):
-    print(canal)
+    # print(canal)
     if(Cliente_en_que_canal_esta(client) != None):
-        print(Cliente_en_que_canal_esta(client)+"borrar")
-        salir_de_canal(Cliente_en_que_canal_esta(client), client)
+        if(esta_en_el_canal(client, canal)):
+            mensaje = f"Ya estás en el canal '{canal}'"
+            soloMessage(mensaje, client)
+            return
+        else:
+            canaldelusuario = Cliente_en_que_canal_esta(client)
+            # mensaje = f"Estás en el canal '"+canaldelusuario+"'.  "
+            # soloMessage(mensaje, client)
+            salir_de_canal(canaldelusuario, client)
+    # return
     
     for c in canales:
-        
         if c == canal:
-            if(esta_en_el_canal(client, canal)):
-                mensaje = f"Ya estás en el canal '{canal}'"
-                soloMessage(mensaje, client)
-                return
-            else:
-                print("Uniendo al canal: " + canal)
-                canales[canal].agregar_cliente(client)
-                mensaje = f"Te has unido al canal '{canal}'"
-                soloMessage(mensaje, client)
-                
-                listar_clients_de_canal(clients)
-
-                return
-        else:
-            mensaje = f"Error:No se reconoce el canal '{canal}' como válido"
+            mensaje = f"Ha entrado al canal '{usernames[clients.index(client)]}'"
+            enviar_a_Canal(mensaje,"Server",client,canal)
+            canales[canal].agregar_cliente(client)
+            mensaje = f"Te has unido al canal '{canal}'"
             soloMessage(mensaje, client)
-            print( mensaje)
+            
+            listar_clients_de_canal(clients)
+            return
+
+        # else:
+    mensaje = f"Error:No se reconoce el canal '{canal}' como válido"
+    soloMessage(mensaje, client)
+    print( mensaje)
+
 
 # Función para añadir un Cliente al canal
 def salir_de_canal(canal, client):
@@ -259,11 +286,11 @@ def salir_de_canal(canal, client):
             canales[canal].eliminar_cliente(c)
             mensaje = f"Te has salido del canal '{canal}'"
             soloMessage(mensaje, client)
-            print("Cliente "+client+": " + mensaje)
+            mensaje = f"Ha salido del canal '{usernames[clients.index(client)]}'"
+            enviar_a_Canal(mensaje,"Server",client,canal)
+            print("Cliente "+usernames[clients.index(client)]+": " + mensaje)
             return
-        # else:
-        #     mensaje = f"No te has salido del canal '{canal}'"
-        #     soloMessage(mensaje, client)
+    mensaje = f"No te has salido del canal '{canal}'"
 
 # Función para enviar mensajes al CANAL
 def enviar_a_Canal(clientMessage, clientUsername, client, canal):
@@ -278,7 +305,7 @@ def enviar_a_Canal(clientMessage, clientUsername, client, canal):
         else:
             messageFormatted += WHITE
 
-        messageFormatted += clientUsername + ':' + RESET + ' ' + "Canal [" + canal + "]: " + clientMessage  + RESTORE_CURSOR
+        messageFormatted += clientUsername + ':' + RESET + ' ' + "[" + canal + "]: " + clientMessage  + RESTORE_CURSOR
         
         # print("LLega antes de enviar")
         if c in canales[canal].clientes:
@@ -337,7 +364,11 @@ def crear_canal(clientMessage, client):
             # print(exito)
             print(f"Canal '{nombreCanal}' creado con éxito")
             soloMessage(exito , client)
-    
+
+def tiene_mas_de_una_palabra(cadena):
+    palabras = cadena.split()
+    return len(palabras) > 1
+
 
 def listar_canales(client):
     print("listando_canales")
@@ -351,7 +382,7 @@ def listar_canales(client):
         return
 
 #Funcion de desarrollador o admin que lista de TODOS los canales TODOS los usuarios
-def listar_clients_de_canales():
+def listar_clients_de_canales(clientMessage, clientUsername, client):
     for canal in canales.keys():
         print("LLEGA")
         canalClientes = canales[canal].clientes
@@ -360,9 +391,9 @@ def listar_clients_de_canales():
             # print("LLEGA2"+str(canalCliente))
             index = clients.index(canalCliente)
             username = usernames[index]
-            message = "En canal ["+ str(canal) +"] Cliente "+ str(index) + " : "+ username
+            message = "En canal ["+ str(canal) +"] Cliente : "+ username
             print(f""+message)
-            # no muestro la informacion al Cliente
+            soloMessage(f""+message, client)
     return
 
 #Funcion para lista los clients del canal donde esta el usuario

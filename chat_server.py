@@ -184,7 +184,7 @@ def checkCommand(clientMessage, clientUsername, client):
             crear_canal(clientMessage, client)
         case "Canal" | "canal" :
             unirse_a_canal(clientMessage.split(' ')[1], client)
-        case "Canales" | "canales" | "listCanales":
+        case "Canales" | "canales" | "listarCanales"| "listaCanales":
             listar_canales(client)
         case "eliminarCanal" | "deleteCanal" | "del" :
             eliminar_canal(clientMessage, client)
@@ -240,7 +240,7 @@ def unirse_a_canal(canal, client):
                 return
             else:
                 print("Uniendo al canal: " + canal)
-                canales[canal].agregar_Cliente(client)
+                canales[canal].agregar_cliente(client)
                 mensaje = f"Te has unido al canal '{canal}'"
                 soloMessage(mensaje, client)
                 

@@ -244,7 +244,7 @@ def checkCommand(clientMessage, clientUsername, client):
         case "emojis" | "emoji":
             listEmojis(client)
             
-        case "testsolo":
+        case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
         
@@ -264,7 +264,7 @@ def checkCommand(clientMessage, clientUsername, client):
             else:
                 client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
-        case  "daradmin":
+        case  "darAdmin":
             if admin:
                 cambiar_admin(data, client)
             else:
@@ -283,7 +283,7 @@ def checkCommand(clientMessage, clientUsername, client):
         case "clear" :
             limpiar_terminal(client)
             
-        case "listapokemon":
+        case "listaPokemon":
             pokemon_list = "\n".join(name for name, _ in personajes)
             pokemon_list += "\n"  
             client.send(pokemon_list.encode('utf-8'))

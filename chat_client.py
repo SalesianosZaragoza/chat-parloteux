@@ -76,6 +76,31 @@ def receive():
 MOVES_CURSOR_1_LINE_UP = "\x1b[1A" 
 CLEAR_ENTIRE_LINE = "\x1b[2K"
 
+#Diccionario de palabras malsonantes
+BAD_WORDS = {
+    'joder' : 'practicar deporte en horizontal',
+    'follar' : 'hacer bebes',
+    'puta': 'persona con un trabajo complicado',
+    'coño': 'la parte entre el ombligo y las rodillas (en femenino)',
+    'chúpamela': 'no estoy de acuerdo contigo',
+    'mierda': 'excremento',
+    'cabrón': 'persona con mucho carácter',
+    'gilipollas': 'persona con mucho carácter',
+    'polla': 'ave',
+    'pene': 'miembro viril',
+    'verga': 'palo',
+    'coger': 'agarrar',
+    'culo': 'parte trasera',
+    'zorra': 'animal',
+    'maricón': 'persona con mucha sensibilidad',
+    'puto': 'persona con un trabajo complicado',
+    'Gorka': 'Dios',
+    'Agustín': 'Un poco menos que Dios',
+    'salesianos': 'la mejor escuela del mundo',
+    'salesiano': 'persona con mucha suerte',
+    'salesiana': 'persona con mucha suerte',
+    'comunista': '☭',
+}
 
 # Función para enviar mensajes al servidor
 def send():
@@ -85,13 +110,20 @@ def send():
     global quit
     while not quit:
         if username == 'null':
-            while True:  
+            while True:  # Keep asking for a username until a valid one is entered
                 username = input("username: ")
-                message = f'{username}'
-                server.send(message.encode('utf-8'))  
-                time.sleep(1)  
-                if username != 'null':  
-                    break
+                if ' ' in username:
+                    print("Nombre de usuario no puede tener espacios. Utiliza solo una palabra.")
+                elif username == '':
+                    print("Nombre de usuario no puede estar vacío.")
+                elif any(bad_word in username.lower() for bad_word in BAD_WORDS):
+                    print("Nombre de usuario no puede contener la palabra prohibida.")
+                else:
+                    message = f'{username}'
+                    server.send(message.encode('utf-8'))  # Send the username to the server
+                    time.sleep(1)  # Wait for a response from the server
+                    if username != 'null':  # If the server accepted the username, break the loop
+                        break
             data = ''
         else:
             data = input("")    
@@ -102,10 +134,10 @@ def send():
             if data == '/exit':
                 close_connection()
                 break
-            last_message_time = time.time() 
+            last_message_time = time.time()  # Update the last message time
         except Exception as e:
             server.close()
-            break    
+            break  
 
 # Instanciar un hilo para verificar la inactividad del usuario
 inactivity_thread = threading.Thread(target=check_inactivity)

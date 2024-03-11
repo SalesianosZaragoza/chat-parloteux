@@ -1,6 +1,5 @@
 import socket
 import threading
-import time
 import psutil
 import random
 
@@ -24,7 +23,6 @@ def filter_address(item):
         return True
 
 
-# print("Servidor iniciado con la dirección IP: " + )
 server.listen()
 host_addr = psutil.net_if_addrs()
 print("Servidor iniciado con las direcciones IP: ")
@@ -94,13 +92,63 @@ BAD_WORDS = {
     'puto': 'persona con un trabajo complicado',
     'Gorka': 'Dios',
     'Agustín': 'Un poco menos que Dios',
+    'agustín': 'Un poco menos que Dios',
     'salesianos': 'la mejor escuela del mundo',
     'salesiano': 'persona con mucha suerte',
     'salesiana': 'persona con mucha suerte',
-    'comunista': '☭'
-    
+    'comunista': ' ☭ ',
+    'Nacho': ' ☭ ',
+    'nacho': ' ☭ ',
+    'Fuck': 'F***',
 }
 
+# Diccionario de comandos y sus descripciones
+COMMANDS_DICT = {
+    "/ayuda | /help": "Ver la lista de comandos disponibles",
+    "/susurrar | /susurro | /whisper": "Susurra un mensaje a un usuario",
+    "/usuarios | /users": "Ver los usuarios conectados",
+    "/emojis | /emoji": "Ver la lista de emojis",
+    "/exit": "Salir del chat",
+    "/kick": "Expulsar a un usuario",
+    "/admin": "Ver el administrador actual",
+    "/setAdmin": "Dar el rol de administrador a un usuario",
+    "/gacha": "Hacer un gacha",
+    "/listaPokemon": "Ver la lista de pokemons disponibles",
+    "/clear" : "Limpiar la terminal",
+    "newCanal | new": "Crear un nuevo canal",
+    "Canal | canal": "Unirse a un canal",
+    "Canales | canales": "Listar los canales existentes",
+    "deleteCanal | del": "Eliminar un canal",
+    "exitCanal | ec": "Salir del canal",
+    "listClientesCanal | lc": "Listar los clientes del canal",
+    "allc": "Listar todos los clientes de todos los canales"
+}
+
+# Lista de personajes y sus probabilidades para el comando /gacha
+PERSONAJES = [
+    ("Pikachu", 0.1),
+    ("Dragonite", 0.1),
+    ("Articuno", 0.05),
+    ("Zapdos", 0.05),
+    ("Moltres", 0.05),
+    ("Mewtwo", 0.05),
+    ("Mew", 0.05),
+    ("Charizard", 0.1),
+    ("Blastoise", 0.1),
+    ("Venusaur", 0.1),
+    ("Gengar", 0.1),
+    ("Alakazam", 0.1),
+    ("Machamp", 0.1),
+    ("Golem", 0.1),
+    ("Lapras", 0.1),
+    ("Snorlax", 0.1),
+    ("Jolteon", 0.1),
+    ("Vaporeon", 0.1),
+    ("Flareon", 0.1),
+]
+
+
+# Colores y estilos para los mensajes
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
 BLACK = "\x1b[30m"
@@ -125,6 +173,8 @@ RESTORE_CURSOR = "\x1b8"
 MOVE_CURSOR_BEGINNING_PREVIOUS_LINE = "\x1b[F"
 CLEAR_ENTIRE_LINE = "\x1b[2K"
 MOVE_CURSOR_END_EMOJIS = "\x1b["+str(len(EMOJI_DICT))+"B"
+MOVE_CURSOR_END_COMMANDS = "\x1b["+str(len(COMMANDS_DICT))+"B"
+MOVE_CURSOR_END_PERSONAJES = "\x1b["+str(len(PERSONAJES))+"B"
 
 colours = [GREEN, YELLOW, BLUE, MAGENTA, CYAN]
 
@@ -152,12 +202,16 @@ def broadcast(clientMessage, clientUsername, client):
 
 #Función para enviar un mensaje a un sólo cliente
 
-def soloMessage(message, client, isEmoji = False):
+def soloMessage(message, client, isEmoji = False, isCommand = False, isPersonaje = False):
     # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
     # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
     messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + message + RESTORE_CURSOR
     if isEmoji:
         messageFormatted += MOVE_CURSOR_END_EMOJIS
+    elif isCommand:
+        messageFormatted += MOVE_CURSOR_END_COMMANDS
+    elif isPersonaje:
+        messageFormatted += MOVE_CURSOR_END_PERSONAJES
     try:
         messageFormatted = messageFormatted.encode('utf-8')
         client.send(messageFormatted)
@@ -209,12 +263,11 @@ def handle(client):
             else:
                 clientMessage = checkContent(clientMessage)
                 #broadcast(clientMessage, clientUsername, client)
-                if (esta_en_algun_canal(client)) :
-                    enviar_a_Canal(clientMessage, clientUsername, client, Cliente_en_que_canal_esta(client))
+                if (clientEnCanal(client)) :
+                    enviarAcanal(clientMessage, clientUsername, client, buscarCanalPorCliente(client))
                 else:
                     broadcast(clientMessage, clientUsername, client)
                     
-
         except Exception as e:
             print(f"Error en handle: {e}")
             if client not in clients:
@@ -242,7 +295,7 @@ def checkCommand(clientMessage, clientUsername, client):
         data = ""
 
     match command:
-        case "susurrar":
+        case "susurrar" | "susurro" | "whisper":
             buildSusurro(clientMessage, data, clientUsername, client)
 
         case "users" | "usuarios":
@@ -250,127 +303,84 @@ def checkCommand(clientMessage, clientUsername, client):
         
         case "emojis" | "emoji":
             listEmojis(client)
-            
-        case "testSolo":
-            if clients.count != 0:
-                soloMessage("testMensajeUnico", clients[0])
         
         case "exit":
             remove(client)
             
-                
         case "kick":
             if clientUsername == admin:
-                kick_usuario(data, clientUsername, client)
+                kickUsuario(data, clientUsername, client)
             else:
                 client.send('No tienes permiso para realizar esta acción. \n'.encode('utf-8'))
         
         case "admin":
-            if admin:
+            if admin and admin in usernames:
                 client.send(f'El administrador actual es {admin} \n'.encode('utf-8'))
             else:
                 client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
-        case  "darAdmin":
-            if admin:
-                cambiar_admin(data, client)
+        case  "setAdmin":
+            if clientUsername == admin:
+                setAdmin(data, client)
             else:
                 client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
         case "gacha":
-            personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
-            broadcast(f'{clientUsername} obtuvo {personaje}!', 'Server', None)
+            personaje = random.choices(PERSONAJES, weights=[prob for _, prob in PERSONAJES], k=1)[0][0]
+            soloMessage(f'{clientUsername} obtuvo {personaje}!', client)
 
-                
-        case "ayuda":
-            command_list = "\n".join(f"{command}, {description}" for command, description in commands.items())
-            command_list += "\n"  
-            client.send(command_list.encode('utf-8'))
+        case "ayuda" | "help":
+            command_list = "\n".join(f"{command}, {description}" for command, description in COMMANDS_DICT.items())
+            command_list += "\n" 
+            soloMessage(command_list, client, isCommand=True)
             
         case "clear" :
             limpiar_terminal(client)
             
         case "listaPokemon":
-            pokemon_list = "\n".join(name for name, _ in personajes)
+            pokemon_list = "\n".join(name for name, _ in PERSONAJES)
             pokemon_list += "\n"  
-            client.send(pokemon_list.encode('utf-8'))
+            soloMessage(pokemon_list, client, isPersonaje=True)
         
         case "newCanal" | "new"  :
-            if(tiene_mas_de_una_palabra(data)):
+            if(esUnaFrase(data)):
                 soloMessage("Error: El nombre del canal no puede tener espacios", client)
             else:
-                crear_canal(clientMessage, client)
+                crearCanal(clientMessage, client)
+
         case "Canal" | "canal" :
             print(clientMessage)
             if(clientMessage.split(' ')[1] in canales):
-                unirse_a_canal(clientMessage.split(' ')[1], client)
+                unirseAcanal(clientMessage.split(' ')[1], client)
             else:
                 mensaje = f"Error:No se reconoce el canal '{clientMessage.split(' ')[1]}' como válido"
                 soloMessage(mensaje, client)
-        case "Canales" | "canales" | "listarCanales"| "listaCanales":
-            listar_canales(client)
-        case "eliminarCanal" | "deleteCanal" | "del" :
-            eliminar_canal(clientMessage, client)
-        case "salirCanal" | "exitCanal" | "ec" | "eC" :
-            salir_de_canal(Cliente_en_que_canal_esta(client),client)
-        case "listClientesCanal" | "lc" | "Lc" | "LC" :
-            listar_clients_de_canal(client)
-        case "all" | "allClients" | "allclients" | "todoslosClientes":
-            listar_clients(client)
-        case "allc":
-            listar_clients_de_canales(clientMessage, clientUsername, client)
         
+        case "Canales" | "canales" | "listarCanales"| "listaCanales":
+            listarCanales(client)
+        
+        case "eliminarCanal" | "deleteCanal" | "del" :
+            eliminarCanal(clientMessage, client)
+        
+        case "salirCanal" | "ec" | "eC" :
+            salirDeCanal(buscarCanalPorCliente(client),client)
+        
+        case "listClientesCanal" | "lc" | "Lc" | "LC" :
+            listarClientesDeCanal(client)
+        
+        case "all" | "allClients" | "allclients" | "todoslosClientes":
+            listarTodosClientes(client)
+        
+        case "allc":
+            listarTodosClientesEnCanal(client)
         
         case _:
-            if (esta_en_algun_canal(client)) :
-                enviar_a_Canal(clientMessage, clientUsername, client, Cliente_en_que_canal_esta(client))
+            if (clientEnCanal(client)) :
+                enviarAcanal(clientMessage, clientUsername, client, buscarCanalPorCliente(client))
             else:
                 broadcast(clientMessage, clientUsername, client)
 
-
-# Diccionario de comandos y sus descripciones
-commands = {
-    "/ayuda": "Ver la lista de comandos disponibles",
-    "/susurrar": "Susurra un mensaje a un usuario",
-    "/usuarios | /users": "Ver los usuarios conectados",
-    "/emojis | /emoji": "Ver la lista de emojis",
-    "/testsolo": "Mandar un mensaje a un solo usuario para comprobar que funciona el comando /soloMessage",
-    "/exit": "Salir del chat",
-    "/kick": "Expulsar a un usuario",
-    "/admin": "Ver el administrador actual",
-    "/daradmin": "Dar el rol de administrador a un usuario",
-    "/gacha": "Hacer un gacha",
-    "/listapokemon": "Ver la lista de pokemons disponibles",
-    "/clear" : "Limpiar la terminal",
-}
-
-# Lista de personajes y sus probabilidades para el comando /gacha
-personajes = [
-    ("Pikachu", 0.1),
-    ("Dragonite", 0.1),
-    ("Articuno", 0.05),
-    ("Zapdos", 0.05),
-    ("Moltres", 0.05),
-    ("Mewtwo", 0.05),
-    ("Mew", 0.05),
-    ("Charizard", 0.1),
-    ("Blastoise", 0.1),
-    ("Venusaur", 0.1),
-    ("Gengar", 0.1),
-    ("Alakazam", 0.1),
-    ("Machamp", 0.1),
-    ("Golem", 0.1),
-    ("Lapras", 0.1),
-    ("Snorlax", 0.1),
-    ("Jolteon", 0.1),
-    ("Vaporeon", 0.1),
-    ("Flareon", 0.1),
-
-]
-
-
 # Función para recoger el remitente de un mensaje privado, formatear el mensaje y llamar a soloMessage()
-
 def buildSusurro(clientMessage, data, clientUsername, client):
     if not str.__contains__(data, " "):
         print("formato de susurro incorrecto:" + clientMessage)
@@ -405,31 +415,32 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     soloMessage(messageFinal, receptorClient)
     
 # Funcion para cambiar el administrador
-def cambiar_admin(nuevo_admin, client):
+def setAdmin(nuevo_admin, client):
     global admin
     if nuevo_admin in usernames:  
         admin = nuevo_admin  
-        client.send(f'El nuevo administrador es {admin}\n'.encode('utf-8'))
+        soloMessage(f'El nuevo administrador es {admin}', client)
     else:
-        client.send('El usuario proporcionado no existe.\n'.encode('utf-8'))
+        soloMessage('El usuario proporcionado no existe.', client)
 
 #Función para expulsar a un usuario
-def kick_usuario(name, clientUsername, client):
+def kickUsuario(nameToKick, clientUsername, client):
     if clientUsername != admin:
-        client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+        soloMessage('No tienes permiso para realizar esta acción.', client)
         return
 
-    if name in usernames:
-        name_index = usernames.index(name)
+    if nameToKick in usernames:
+        name_index = usernames.index(nameToKick)
         client_to_kick = clients[name_index]
         clients.remove(client_to_kick)
-        client_to_kick.send(f'Has sido expulsado por {admin}.'.encode('utf-8'))
+        soloMessage(f'Has sido expulsado por {admin}.', client_to_kick)
         client_to_kick.close()
-        usernames.remove(name)
-        broadcast(f'{name} ha sido expulsado del chat por {admin}.', 'Server', client)
-        client.send(f'El usuario {name} ha sido expulsado con éxito.\n'.encode('utf-8'))
+        usernames.remove(nameToKick)
+        broadcast(f'{nameToKick} ha sido expulsado del chat por {admin}.', 'Server', client)
+        soloMessage(f'El usuario {nameToKick} ha sido expulsado con éxito.', client)
+
     else:
-        client.send('Error: Nombre de usuario no válido'.encode('utf-8'))
+        soloMessage('Error: Nombre de usuario no válido', client)
 
 # Función para comprobar el contenido del mensaje
 def checkContent(clientMessage):
@@ -462,52 +473,35 @@ def checkFuck(clientMessage):
 # Función para eliminar un cliente de la lista
 def remove(client):
     if client in clients:
+        #canales[buscarCanalPorCliente(client)].eliminar_cliente(client)
         index = clients.index(client)
-        clients.remove(client)
-        client.close()
         username = usernames[index]
         clientUsername = "Server"
         clientMessage = (f'{colours[index] + username + RESET} ha abandonado el chat.')
         broadcast(clientMessage, clientUsername, client)
+        clients.remove(client)
+        client.close()
         print(f'{colours[index] + username + RESET} ha habandonado el chat.')
         usernames.remove(username)
 
-
-# Mostrar los comandos relacionados con los canales
-comandosCanales = {
-    "newCanal | new": "Crear un nuevo canal",
-    "Canal | canal": "Unirse a un canal",
-    "Canales | canales": "Listar los canales existentes",
-    "deleteCanal | del": "Eliminar un canal",
-    "exitCanal | ec": "Salir del canal",
-    "listClientesCanal | lc": "Listar los clientes del canal",
-    "allc": "Listar todos los clientes de todos los canales"
-}
-def mostrar_comandos_canales():
-    print("\nComandos relacionados con los canales:\n")
-    for comando, descripcion in comandosCanales.items():
-        print(f"{comando}: {descripcion}" + "\n")
-
-
 # Función para añadir un Cliente al canal
-def unirse_a_canal(canal, client):
+def unirseAcanal(canal, client):
     # print(canal)
-    if(Cliente_en_que_canal_esta(client) != None):
-        if(esta_en_el_canal(client, canal)):
+    if(buscarCanalPorCliente(client) != None):
+        if(clientEnEsteCanal(client, canal)):
             mensaje = f"Ya estás en el canal '{canal}'"
             soloMessage(mensaje, client)
             return
         else:
-            canaldelusuario = Cliente_en_que_canal_esta(client)
+            canaldelusuario = buscarCanalPorCliente(client)
             # mensaje = f"Estás en el canal '"+canaldelusuario+"'.  "
             # soloMessage(mensaje, client)
-            salir_de_canal(canaldelusuario, client)
-    # return
+            salirDeCanal(canaldelusuario, client)
     
     for c in canales:
         if c == canal:
             mensaje = f"Ha entrado al canal '{usernames[clients.index(client)]}'"
-            enviar_a_Canal(mensaje,"Server",client,canal)
+            enviarAcanal(mensaje,"Server",client,canal)
             canales[canal].agregar_cliente(client)
             mensaje = f"Te has unido al canal '{canal}'"
             soloMessage(mensaje, client)
@@ -515,24 +509,24 @@ def unirse_a_canal(canal, client):
 
     mensaje = f"Error:No se reconoce el canal '{canal}' como válido"
     soloMessage(mensaje, client)
-    print( mensaje)
+    print(mensaje)
 
 
-# Función para añadir un Cliente al canal
-def salir_de_canal(canal, client):
+# Función para sacar a un Cliente de un canal
+def salirDeCanal(canal, client):
     for c in clients:
         if c == client:
             canales[canal].eliminar_cliente(c)
             mensaje = f"Te has salido del canal '{canal}'"
             soloMessage(mensaje, client)
             mensaje = f"Ha salido del canal '{usernames[clients.index(client)]}'"
-            enviar_a_Canal(mensaje,"Server",client,canal)
+            enviarAcanal(mensaje,"Server",client,canal)
             print("Cliente "+usernames[clients.index(client)]+": " + mensaje)
             return
     mensaje = f"No te has salido del canal '{canal}'"
 
 # Función para enviar mensajes al CANAL
-def enviar_a_Canal(clientMessage, clientUsername, client, canal):
+def enviarAcanal(clientMessage, clientUsername, client, canal):
     for c in clients:
         messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + CLEAR_ENTIRE_LINE
         if c != client and c in canales[canal].clientes:
@@ -557,26 +551,26 @@ def enviar_a_Canal(clientMessage, clientUsername, client, canal):
 
 #Funciones para gestionar CANALES y ClienteS
 #Función que mira si el Cliente esta en algun canal
-def esta_en_algun_canal(client):
+def clientEnCanal(client):
     for canal in canales.values():
         if canal.encontrar_cliente(client) != None:
             return True
     return False
 #Función que mira si el Cliente esta en EL Canal
-def esta_en_el_canal(client, canal):
+def clientEnEsteCanal(client, canal):
     if canales[canal].encontrar_cliente(client) != None:
         return True
     else:
         return False
 #Funcion que devuelve el canal donde esta el Cliente
-def Cliente_en_que_canal_esta(client):
+def buscarCanalPorCliente(client):
     for canal in canales:
         if canales[canal].encontrar_cliente(client) != None:
             return canales[canal].nombre
     return None
 
 # Funciones de control y creacion de canales
-def crear_canal(clientMessage, client):
+def crearCanal(clientMessage, client):
     print("creando_el_canal")
     if str.__contains__(clientMessage, ' '):
         command, nombreCanal = clientMessage.split(' ', 1)
@@ -604,12 +598,12 @@ def crear_canal(clientMessage, client):
             print(f"Canal '{nombreCanal}' creado con éxito")
             soloMessage(exito , client)
 
-def tiene_mas_de_una_palabra(cadena):
+def esUnaFrase(cadena):
     palabras = cadena.split()
     return len(palabras) > 1
 
 
-def listar_canales(client):
+def listarCanales(client):
     print("listando_canales")
     if len(canales) == 0:
         mensaje = "No hay canales creados"
@@ -621,7 +615,7 @@ def listar_canales(client):
         return
 
 #Funcion de desarrollador o admin que lista de TODOS los canales TODOS los usuarios
-def listar_clients_de_canales(clientMessage, clientUsername, client):
+def listarTodosClientesEnCanal(client):
     for canal in canales.keys():
         # print("LLEGA")
         canalClientes = canales[canal].clientes
@@ -631,12 +625,12 @@ def listar_clients_de_canales(clientMessage, clientUsername, client):
             index = clients.index(canalCliente)
             username = usernames[index]
             message = "En canal ["+ str(canal) +"] Cliente : "+ username
-            print(f""+message)
-            soloMessage(f""+message, client)
+            print(message)
+            soloMessage(message, client)
     return
 
 #Funcion para lista los clients del canal donde esta el usuario
-def listar_clients_de_canal(client):
+def listarClientesDeCanal(client):
     for canal in canales:
         if canales[canal].encontrar_cliente(client) != None:
             canalClientes = canales[canal].clientes
@@ -650,10 +644,10 @@ def listar_clients_de_canal(client):
         else:
             mensaje = f"No estas en un canal. Unete"
             soloMessage(mensaje, client)
-            listar_canales(client)
+            listarCanales(client)
     return
 
-def listar_clients(client):
+def listarTodosClientes(client):
     for client2 in clients:
         index = clients.index(client2)
         username = usernames[index]
@@ -661,10 +655,10 @@ def listar_clients(client):
         soloMessage(mensaje, client)
         print(mensaje)
 
-def eliminar_canal(clientMessage, client):
+def eliminarCanal(clientMessage, client):
     print("eliminando_el_canal")
     if str.__contains__(clientMessage, ' '):
-        command, nombreCanal = clientMessage.split(' ', 1)
+        _, nombreCanal = clientMessage.split(' ', 1)
     if nombreCanal == "" or nombreCanal == " ":
         mensaje = ("Error:'" + nombreCanal + "' no es valido el nombre del canal")
         soloMessage(mensaje, client)
@@ -690,15 +684,9 @@ def eliminar_canal(clientMessage, client):
             soloMessage(exito , client)
 
 
-
-
-
-# Función principal para aceptar conexiones de Clientes
-
-
 # Metodo para limpiar la terminal 
 def limpiar_terminal(client):
-    MOVES = "\033[H" 
+    MOVES00 = "\033[H" 
     # CLEAR = "\033[J"
     # BORRAR = MOVES +CLEAR 
     BORRAR = "\033[2J"
@@ -707,7 +695,7 @@ def limpiar_terminal(client):
         index = clients.index(client)
         username = usernames[index]
         
-        soloMessage("\033[J"+ BORRAR + MOVES, client)
+        soloMessage(BORRAR + MOVES00, client)
         print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
 
 def main():

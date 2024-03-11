@@ -54,12 +54,15 @@ def check_inactivity():
 def receive():
     global quit
     global username
+    global duplicateUsername
     while not quit:
         try:
             # Recibir y mostrar mensajes del servidor
             message = server.recv(1024).decode('utf-8')
             if message == 'Nombre de usuario ya está en uso. Por favor, elige otro.':
-                username = 'null'  # Clear the username
+                duplicateUsername = username
+                username = 'null'
+                time.sleep(1)  # Clear the username
             elif message == 'Has sido expulsado por un administrador.':
                 print("Has sido expulsado del servidor.")
                 close_connection()
@@ -97,10 +100,14 @@ BAD_WORDS = {
     'puto': 'persona con un trabajo complicado',
     'Gorka': 'Dios',
     'Agustín': 'Un poco menos que Dios',
+    'agustín': 'Un poco menos que Dios',
     'salesianos': 'la mejor escuela del mundo',
     'salesiano': 'persona con mucha suerte',
     'salesiana': 'persona con mucha suerte',
-    'comunista': '☭',
+    'comunista': ' ☭ ',
+    'Nacho': ' ☭ ',
+    'nacho': ' ☭ ',
+    'Fuck': 'F***',
 }
 
 # Función para enviar mensajes al servidor
@@ -115,10 +122,16 @@ def send():
                 username = input("username: ")
                 if ' ' in username:
                     print("Nombre de usuario no puede tener espacios. Utiliza solo una palabra.")
+                    username == 'null'
                 elif username == '':
                     print("Nombre de usuario no puede estar vacío.")
+                    username == 'null'
                 elif any(bad_word in username.lower() for bad_word in BAD_WORDS):
                     print("Nombre de usuario no puede contener la palabra prohibida.")
+                    username == 'null'
+                elif len(username) > 1:
+                    print("El nombre de usuario no puede tener más de una palabra")
+                    username == 'null'
                 else:
                     message = f'{username}'
                     server.send(message.encode('utf-8'))  # Send the username to the server

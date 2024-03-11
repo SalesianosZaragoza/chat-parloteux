@@ -265,11 +265,10 @@ def checkCommand(clientMessage, clientUsername, client):
                 client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
         case  "daradmin":
-            if clientUsername == admin:
-                admin = data
-                client.send(f'El nuevo administrador es {admin} \n'.encode('utf-8'))
+            if admin:
+                cambiar_admin(data, client)
             else:
-                client.send('No tienes permiso para realizar esta acción. \n'.encode('utf-8'))
+                client.send('No hay administrador, que triste. \n'.encode('utf-8'))
                 
         case "gacha":
             personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
@@ -307,8 +306,8 @@ def checkCommand(clientMessage, clientUsername, client):
 commands = {
     "/ayuda": "Ver la lista de comandos disponibles",
     "/susurrar": "Susurra un mensaje a un usuario",
-    "/usuarios o /users": "Ver los usuarios conectados",
-    "/emojis o /emoji": "Ver la lista de emojis",
+    "/usuarios | /users": "Ver los usuarios conectados",
+    "/emojis | /emoji": "Ver la lista de emojis",
     "/testsolo": "Mandar un mensaje a un solo usuario para comprobar que funciona el comando /soloMessage",
     "/exit": "Salir del chat",
     "/kick": "Expulsar a un usuario",
@@ -379,6 +378,15 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
     soloMessage(messageFinal, receptorClient)
+    
+# Funcion para cambiar el administrador
+def cambiar_admin(nuevo_admin, client):
+    global admin
+    if nuevo_admin in usernames:  
+        admin = nuevo_admin  
+        client.send(f'El nuevo administrador es {admin}\n'.encode('utf-8'))
+    else:
+        client.send('El usuario proporcionado no existe.\n'.encode('utf-8'))
 
 #Función para expulsar a un usuario
 def kick_usuario(name, clientUsername, client):

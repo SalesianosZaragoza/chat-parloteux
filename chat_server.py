@@ -269,11 +269,8 @@ def unirse_a_canal(canal, client):
             canales[canal].agregar_cliente(client)
             mensaje = f"Te has unido al canal '{canal}'"
             soloMessage(mensaje, client)
-            
-            listar_clients_de_canal(clients)
             return
 
-        # else:
     mensaje = f"Error:No se reconoce el canal '{canal}' como válido"
     soloMessage(mensaje, client)
     print( mensaje)
@@ -404,7 +401,7 @@ def listar_clients_de_canal(client):
             for canalCliente in canalClientes:
                 index = clients.index(canalCliente)
                 username = usernames[index]
-                mensaje = f"Canal '{canal}', Cliente '{index+1}': '{username}'"
+                mensaje = f"Canal '{canal}', Cliente : '{username}'"
                 soloMessage(mensaje, client)
                 print(mensaje)
             # return
@@ -444,26 +441,6 @@ def eliminar_canal(clientMessage, client):
             exito = f"Canal '{nombreCanal}' no Existe; Canales existentes: {', '.join(canales.keys())}"
             print(f"Error: Canal '{nombreCanal}' no Existe")
             soloMessage(exito , client)
-            
-
-#Funcion para sacar un client de canales
-def sacar_del_canal(client):
-    for canal in canales:
-        if canales[canal].encontrar_cliente(client) != None:
-            canales[canal].encontrar_cliente(client)
-            index = clients.index(client)
-            username = usernames[index]
-            mensaje = f"'{username}'Te has salido del canal '{canal}'"
-            soloMessage(mensaje, client)
-            print(mensaje)
-            return
-        else:
-            mensaje = f"No estabas en el canal '{canal}'"
-            soloMessage(mensaje, client)
-    return
-
-
-
 
 
 # metodo para limpiar la terminal 
@@ -479,7 +456,6 @@ def limpiar_terminal(client):
         
         soloMessage(BORRAR, client)
         print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
-
 
 
 # Función principal para aceptar conexiones de Clientes

@@ -1,6 +1,9 @@
 import socket
 import threading
+import time
 import psutil
+import random
+
 
 # Configuración del servidor
 host = ''
@@ -91,8 +94,11 @@ BAD_WORDS = {
     'Agustín': 'Un poco menos que Dios',
     'salesianos': 'la mejor escuela del mundo',
     'salesiano': 'persona con mucha suerte',
-    'salesiana': 'persona con mucha suerte'
+    'salesiana': 'persona con mucha suerte',
+    'comunista': '☭'
+    
 }
+
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
 BLACK = "\x1b[30m"
@@ -207,10 +213,15 @@ def handle(client):
             if client not in clients:
                 break
 
+
+admin = 'alberto'
+
+
 # Función de control de comandos
 
 
 def checkCommand(clientMessage, clientUsername, client):
+    global admin
     print("es un comando")
 
     totalMessage = str.split(clientMessage, '/', 1)[1]
@@ -226,21 +237,100 @@ def checkCommand(clientMessage, clientUsername, client):
     match command:
         case "susurrar":
             buildSusurro(clientMessage, data, clientUsername, client)
-        
+
         case "users" | "usuarios":
             soloMessage(usernames.__str__(), client)
         
         case "emojis" | "emoji":
             listEmojis(client)
-
+            
         case "testSolo":
             if clients.count != 0:
                 soloMessage("testMensajeUnico", clients[0])
         
         case "exit":
             remove(client)
+            
+                
+        case "kick":
+            if clientUsername == admin:
+                kick_usuario(data, clientUsername, client)
+            else:
+                client.send('No tienes permiso para realizar esta acción. \n'.encode('utf-8'))
+        
+        case "admin":
+            if admin:
+                client.send(f'El administrador actual es {admin} \n'.encode('utf-8'))
+            else:
+                client.send('No hay administrador, que triste. \n'.encode('utf-8'))
+                
+        case  "darAdmin":
+            if admin:
+                cambiar_admin(data, client)
+            else:
+                client.send('No hay administrador, que triste. \n'.encode('utf-8'))
+                
+        case "gacha":
+            personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
+            broadcast(f'{clientUsername} obtuvo {personaje}!', 'Server', None)
+
+                
+        case "ayuda":
+            command_list = "\n".join(f"{command}, {description}" for command, description in commands.items())
+            command_list += "\n"  
+            client.send(command_list.encode('utf-8'))
+            
+        case "clear" :
+            limpiar_terminal(client)
+            
+        case "listaPokemon":
+            pokemon_list = "\n".join(name for name, _ in personajes)
+            pokemon_list += "\n"  
+            client.send(pokemon_list.encode('utf-8'))
+        
         case _:
             broadcast(clientMessage, clientUsername, client)
+
+
+# Diccionario de comandos y sus descripciones
+commands = {
+    "/ayuda": "Ver la lista de comandos disponibles",
+    "/susurrar": "Susurra un mensaje a un usuario",
+    "/usuarios | /users": "Ver los usuarios conectados",
+    "/emojis | /emoji": "Ver la lista de emojis",
+    "/testsolo": "Mandar un mensaje a un solo usuario para comprobar que funciona el comando /soloMessage",
+    "/exit": "Salir del chat",
+    "/kick": "Expulsar a un usuario",
+    "/admin": "Ver el administrador actual",
+    "/daradmin": "Dar el rol de administrador a un usuario",
+    "/gacha": "Hacer un gacha",
+    "/listapokemon": "Ver la lista de pokemons disponibles",
+    "/clear" : "Limpiar la terminal",
+}
+
+# Lista de personajes y sus probabilidades para el comando /gacha
+personajes = [
+    ("Pikachu", 0.1),
+    ("Dragonite", 0.1),
+    ("Articuno", 0.05),
+    ("Zapdos", 0.05),
+    ("Moltres", 0.05),
+    ("Mewtwo", 0.05),
+    ("Mew", 0.05),
+    ("Charizard", 0.1),
+    ("Blastoise", 0.1),
+    ("Venusaur", 0.1),
+    ("Gengar", 0.1),
+    ("Alakazam", 0.1),
+    ("Machamp", 0.1),
+    ("Golem", 0.1),
+    ("Lapras", 0.1),
+    ("Snorlax", 0.1),
+    ("Jolteon", 0.1),
+    ("Vaporeon", 0.1),
+    ("Flareon", 0.1),
+
+]
 
 
 # Función para recoger el remitente de un mensaje privado, formatear el mensaje y llamar a soloMessage()
@@ -277,6 +367,33 @@ def buildSusurro(clientMessage, data, clientUsername, client):
     
     print(f"{clientUsername} susurra a {receptorName} con el index {receptorIndex} el mensaje {messageFinal}")
     soloMessage(messageFinal, receptorClient)
+    
+# Funcion para cambiar el administrador
+def cambiar_admin(nuevo_admin, client):
+    global admin
+    if nuevo_admin in usernames:  
+        admin = nuevo_admin  
+        client.send(f'El nuevo administrador es {admin}\n'.encode('utf-8'))
+    else:
+        client.send('El usuario proporcionado no existe.\n'.encode('utf-8'))
+
+#Función para expulsar a un usuario
+def kick_usuario(name, clientUsername, client):
+    if clientUsername != admin:
+        client.send('No tienes permiso para realizar esta acción.'.encode('utf-8'))
+        return
+
+    if name in usernames:
+        name_index = usernames.index(name)
+        client_to_kick = clients[name_index]
+        clients.remove(client_to_kick)
+        client_to_kick.send(f'Has sido expulsado por {admin}.'.encode('utf-8'))
+        client_to_kick.close()
+        usernames.remove(name)
+        broadcast(f'{name} ha sido expulsado del chat por {admin}.', 'Server', client)
+        client.send(f'El usuario {name} ha sido expulsado con éxito.\n'.encode('utf-8'))
+    else:
+        client.send('Error: Nombre de usuario no válido'.encode('utf-8'))
 
 # Función para comprobar el contenido del mensaje
 def checkContent(clientMessage):
@@ -322,15 +439,37 @@ def remove(client):
 # Función principal para aceptar conexiones de clientes
 
 
+# Metodo para limpiar la terminal 
+def limpiar_terminal(client):
+    MOVES = "\033[H" 
+    # CLEAR = "\033[J"
+    # BORRAR = MOVES +CLEAR 
+    BORRAR = "\033[2J"
+    # comandoBorrar = MOVES +CLEAR+ BORRAR
+    if client in clients:
+        index = clients.index(client)
+        username = usernames[index]
+        
+        soloMessage("\033[J"+ BORRAR + MOVES, client)
+        print(f'{colours[index] + username + RESET} ha limpiado la terminal.')
+
 def main():
     while True:
         # Aceptar conexión del cliente
         client, address = server.accept()
         print(f"Conexión establecida con {str(address)}")
 
-        # Solicitar y almacenar el nombre de usuario del cliente
-        client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
-        username = client.recv(1024).decode('utf-8')
+        while True:
+            # Solicitar y almacenar el nombre de usuario del cliente
+            client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
+            username = client.recv(1024).decode('utf-8')
+        
+            # Comprobar si el usuario ya existe
+            if username in usernames:
+                client.send('Nombre de usuario ya está en uso. Por favor, elige otro.'.encode('utf-8'))
+            else:
+                break
+        
         usernames.append(username)
         clients.append(client)
 

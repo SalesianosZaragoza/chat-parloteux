@@ -256,7 +256,7 @@ def unirse_a_canal(canal, client):
 def salir_de_canal(canal, client):
     for c in clients:
         if c == client:
-            canales[canal].eliminar_Cliente(c)
+            canales[canal].eliminar_cliente(c)
             mensaje = f"Te has salido del canal '{canal}'"
             soloMessage(mensaje, client)
             print("Cliente "+client+": " + mensaje)
@@ -355,7 +355,7 @@ def listar_canales(client):
 def listar_clients_de_canales():
     for canal in canales.keys():
         print("LLEGA")
-        canalClientes = canales[canal].canalClientes
+        canalClientes = canales[canal].clientes
         # for client in clients:
         for canalCliente in canalClientes:
             # print("LLEGA2"+str(canalCliente))
@@ -370,7 +370,7 @@ def listar_clients_de_canales():
 def listar_clients_de_canal(client):
     for canal in canales:
         if canales[canal].encontrar_cliente(client) != None:
-            canalClientes = canales[canal].canalClientes
+            canalClientes = canales[canal].clientes
             for canalCliente in canalClientes:
                 index = clients.index(canalCliente)
                 username = usernames[index]

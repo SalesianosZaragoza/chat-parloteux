@@ -274,16 +274,6 @@ def checkCommand(clientMessage, clientUsername, client):
             personaje = random.choices(personajes, weights=[prob for _, prob in personajes], k=1)[0][0]
             broadcast(f'{clientUsername} obtuvo {personaje}!', 'Server', None)
 
-        case "gacha50":
-            desired_personaje = data  # El pokemon deseado por el usuario se especifica en el comando
-            if desired_personaje not in [name for name, _ in personajes]:
-                broadcast(f'Personaje invalido "{desired_personaje}".', 'Server', None)
-            elif random.random() < 0.5:
-                broadcast(f'{clientUsername} obtuvo "{desired_personaje}" que deseaste, felicidades!', 'Server', None)
-            else:
-                otro_personaje = random.choice([name for name, _ in personajes if name != desired_personaje])
-                broadcast(f'{clientUsername}, perdiste el 50/50, obtuviste a "{otro_personaje}" ', 'Server', None)
-                
                 
         case "ayuda":
             command_list = "\n".join(f"{command}, {description}" for command, description in commands.items())
@@ -314,7 +304,6 @@ commands = {
     "/admin": "Ver el administrador actual",
     "/daradmin": "Dar el rol de administrador a un usuario",
     "/gacha": "Hacer un gacha",
-    "/gacha50 (pokemon)": "Hacer un gacha con un 50% de probabilidad de ganar el pokemon deseado",
     "/listapokemon": "Ver la lista de pokemons disponibles",
     "/clear" : "Limpiar la terminal",
 }

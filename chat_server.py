@@ -275,7 +275,7 @@ def handle(client):
                     broadcast(clientMessage, clientUsername, client)
                     
         except Exception as e:
-            print(f"Error en handle: {e}")
+            #print(f"Error en handle: {e}")
             if client not in clients:
                 break
 

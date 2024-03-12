@@ -121,7 +121,6 @@ def send():
     global username
     global quit
     usernameSet = False
-    data = MOVES_CURSOR_1_LINE_DOWN
     while not quit:
         if username == 'null':
             while not usernameSet:  # Keep asking for a username until a valid one is entered
@@ -144,21 +143,22 @@ def send():
                     time.sleep(1)  # Wait for a response from the server
                     if username != 'null':  # If the server accepted the username, break the loop
                         usernameSet = True
-                        print(data)
                         continue
+            data = ''
         else:
             data = input("")    
             message = f'{username}: {data}'
-        try:
-            server.send(message.encode('utf-8'))
-            print(MOVES_CURSOR_1_LINE_UP+CLEAR_ENTIRE_LINE+MOVES_CURSOR_1_LINE_UP)
-            if data == '/exit':
+        if data is not None and data != '':
+            try:
+                server.send(message.encode('utf-8'))
+                print(MOVES_CURSOR_1_LINE_UP+CLEAR_ENTIRE_LINE+MOVES_CURSOR_1_LINE_UP)
+                if data == '/exit':
+                    close_connection()
+                    break
+                last_message_time = time.time()  # Update the last message time
+            except Exception as e:
                 close_connection()
-                break
-            last_message_time = time.time()  # Update the last message time
-        except Exception as e:
-            close_connection()
-            break  
+                break  
 
 # Instanciar un hilo para verificar la inactividad del usuario
 inactivity_thread = threading.Thread(target=check_inactivity)

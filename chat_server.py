@@ -115,13 +115,13 @@ COMMANDS_DICT = {
     "/gacha": "Hacer un gacha",
     "/listaPokemon": "Ver la lista de pokemons disponibles",
     "/clear" : "Limpiar la terminal",
-    "newCanal | new": "Crear un nuevo canal",
-    "Canal | canal": "Unirse a un canal",
-    "Canales | canales": "Listar los canales existentes",
-    "deleteCanal | del": "Eliminar un canal",
-    "exitCanal | ec": "Salir del canal",
-    "listClientesCanal | lc": "Listar los clientes del canal",
-    "allc": "Listar todos los clientes de todos los canales"
+    "/newCanal | /new": "Crear un nuevo canal",
+    "/Canal | /canal": "Unirse a un canal",
+    "/Canales | /canales": "Listar los canales existentes",
+    "/deleteCanal | /del": "Eliminar un canal",
+    "/exitCanal | /ec": "Salir del canal",
+    "/listClientesCanal | /lc": "Listar los clientes del canal",
+    "/allc": "Listar todos los clientes de todos los canales"
 }
 
 # Lista de personajes y sus probabilidades para el comando /gacha

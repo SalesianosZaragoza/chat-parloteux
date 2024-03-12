@@ -205,7 +205,7 @@ def broadcast(clientMessage, clientUsername, client):
 def soloMessage(message, client, isEmoji = False, isCommand = False, isPersonaje = False):
     # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
     # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
-    messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + message + RESTORE_CURSOR
+    messageFormatted = message + RESTORE_CURSOR
     if isEmoji:
         messageFormatted += MOVE_CURSOR_END_EMOJIS
     elif isCommand:
@@ -242,8 +242,13 @@ def handle(client):
 
             # Decodificar y procesar el mensaje
             message = message.decode('utf-8')
-            clientUsername = message.split(': ', 1)[0]
-            clientMessage = message.split(': ', 1)[1]
+            if ':' in message:
+                clientUsername = message.split(': ', 1)[0]
+                clientMessage = message.split(': ', 1)[1]
+            else:
+                clientUsername = message
+                
+                continue
 
             """ Prints de debug para la separación de mensajes
             print("message:", message)
@@ -257,8 +262,9 @@ def handle(client):
             print(f"Cliente {clientUsername} envía el mensaje: {clientMessage}")
             print("Clientes conectados:", len(clients))
 
-            
-            if clientMessage.startswith('/'):
+            if clientMessage == 'null' or clientMessage == '' or clientMessage == None:
+                continue
+            elif clientMessage.startswith('/'):
                 checkCommand(clientMessage, clientUsername, client)
             else:
                 clientMessage = checkContent(clientMessage)
@@ -460,7 +466,7 @@ def listEmojis(clientMessage):
     for key, value in EMOJI_DICT.items():
         totalString = totalString + key + " --> " + value + '\n'
         
-    totalString += '\n\n'
+    #totalString += '\n\n'
     soloMessage(totalString, clientMessage, True)
 
 #Función para comproobar palabras malsonantes
@@ -704,7 +710,8 @@ def main():
         client, address = server.accept()
         print(f"Conexión establecida con {str(address)}")
 
-        while True:
+        tengoNombre = False
+        while not tengoNombre:
             # Solicitar y almacenar el nombre de usuario del cliente
             client.send('Ingresa tu nombre de usuario:'.encode('utf-8'))
             username = client.recv(1024).decode('utf-8')
@@ -713,7 +720,7 @@ def main():
             if username in usernames:
                 client.send('Nombre de usuario ya está en uso. Por favor, elige otro.'.encode('utf-8'))
             else:
-                break
+                tengoNombre = True
         
         usernames.append(username)
         clients.append(client)

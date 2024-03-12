@@ -27,10 +27,13 @@ last_message_time = time.time()
 
 #Función para cerrar la conexión con el server
 def close_connection():
+    global quit
     print("Cerrando conexión...")
+    try:
+        server.close()
+    except Exception as e:
+        pass
     quit = True
-    server.close()
-    time.sleep(1)
     print("Conexión cerrada.\nPresiona ctrl+c para salir.")
 
 
@@ -72,13 +75,14 @@ def receive():
             # Cerrar la conexión si hay un problema al recibir el mensaje
             #print(f"Error en receive: {e}")
             #print("Cerrando conexión...")
-            close_connection()
+            #close_connection()
             #print("Conexión cerrada.\nPresiona ctrl+c para salir.")
             break       
 
 #Constantes secuencias de escape
 MOVES_CURSOR_1_LINE_UP = "\x1b[1A" 
 CLEAR_ENTIRE_LINE = "\x1b[2K"
+MOVES_CURSOR_1_LINE_DOWN = "\x1b[1B"
 
 #Diccionario de palabras malsonantes
 BAD_WORDS = {
@@ -116,9 +120,11 @@ def send():
     global last_message_time
     global username
     global quit
+    usernameSet = False
+    data = MOVES_CURSOR_1_LINE_DOWN
     while not quit:
         if username == 'null':
-            while True:  # Keep asking for a username until a valid one is entered
+            while not usernameSet:  # Keep asking for a username until a valid one is entered
                 username = input("username: ")
                 if ' ' in username:
                     print("Nombre de usuario no puede tener espacios. Utiliza solo una palabra.")
@@ -129,16 +135,17 @@ def send():
                 elif any(bad_word in username.lower() for bad_word in BAD_WORDS):
                     print("Nombre de usuario no puede contener la palabra prohibida.")
                     username == 'null'
-                elif len(username) > 1:
+                elif len(username.split(' ')) > 1:
                     print("El nombre de usuario no puede tener más de una palabra")
                     username == 'null'
                 else:
-                    message = f'{username}'
+                    message = username
                     server.send(message.encode('utf-8'))  # Send the username to the server
                     time.sleep(1)  # Wait for a response from the server
                     if username != 'null':  # If the server accepted the username, break the loop
-                        break
-            data = ''
+                        usernameSet = True
+                        print(data)
+                        continue
         else:
             data = input("")    
             message = f'{username}: {data}'
@@ -150,7 +157,7 @@ def send():
                 break
             last_message_time = time.time()  # Update the last message time
         except Exception as e:
-            server.close()
+            close_connection()
             break  
 
 # Instanciar un hilo para verificar la inactividad del usuario

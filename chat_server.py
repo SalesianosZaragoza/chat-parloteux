@@ -205,7 +205,7 @@ def broadcast(clientMessage, clientUsername, client):
 def soloMessage(message, client, isEmoji = False, isCommand = False, isPersonaje = False):
     # en orden: guardar la posición del cursor, mover el cursor al principio de la línea anterior (la línea en blanco encima),
     # escribir el mensaje a enviar y volver a poner el cursor donde estaba (el principio de una línea, a mitad de escribir...)
-    messageFormatted = message + RESTORE_CURSOR
+    messageFormatted = SAVE_CURSOR + MOVE_CURSOR_BEGINNING_PREVIOUS_LINE + CLEAR_ENTIRE_LINE + message + RESTORE_CURSOR
     if isEmoji:
         messageFormatted += MOVE_CURSOR_END_EMOJIS
     elif isCommand:
